@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     @Override
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-        BeaconService.MyBinder binder = (BeaconService.MyBinder) iBinder;
+        BeaconService.BeaconBinder binder = (BeaconService.BeaconBinder) iBinder;
         beaconService = binder.getService();
         beaconServiceIsBound = true;
     }

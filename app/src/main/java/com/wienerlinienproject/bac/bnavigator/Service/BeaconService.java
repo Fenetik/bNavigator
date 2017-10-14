@@ -25,7 +25,7 @@ public class BeaconService extends Service {
     private BeaconRegion region;
     private String destination = "Mc Donalds";
 
-    private final IBinder mBinder = new MyBinder();
+    private final IBinder mBinder = new BeaconBinder();
 
     public BeaconService() {
     }
@@ -155,7 +155,7 @@ public class BeaconService extends Service {
         return "Go to: "+placesNearBeacon(beacon).get(1);
     }
 
-   public class MyBinder extends Binder {
+   public class BeaconBinder extends Binder {
 
        public BeaconService getService(){
             return BeaconService.this;
