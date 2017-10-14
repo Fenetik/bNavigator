@@ -6,9 +6,18 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.estimote.coresdk.cloud.api.CloudCallback;
+import com.estimote.coresdk.common.exception.EstimoteCloudException;
 import com.estimote.coresdk.observation.region.beacon.BeaconRegion;
 import com.estimote.coresdk.recognition.packets.Beacon;
 import com.estimote.coresdk.service.BeaconManager;
+import com.estimote.indoorsdk.algorithm.IndoorLocationManagerBuilder;
+import com.estimote.indoorsdk.algorithm.OnPositionUpdateListener;
+import com.estimote.indoorsdk.algorithm.ScanningIndoorLocationManager;
+import com.estimote.indoorsdk.cloud.IndoorCloudManager;
+import com.estimote.indoorsdk.cloud.IndoorCloudManagerFactory;
+import com.estimote.indoorsdk.cloud.Location;
+import com.estimote.indoorsdk.cloud.LocationPosition;
 import com.wienerlinienproject.bac.bnavigator.Presentation.MainActivity;
 
 import java.util.ArrayList;
@@ -21,9 +30,14 @@ public class BeaconService extends Service {
 
 
     private  Map<String, List<String>> PLACES_BY_BEACONS;
+    private String destination = "Mc Donalds";
+
     private BeaconManager beaconManager;
     private BeaconRegion region;
-    private String destination = "Mc Donalds";
+
+    private IndoorCloudManager cloudManager;
+    private ScanningIndoorLocationManager indoorManager;
+    private Location location;
 
     private final IBinder mBinder = new BeaconBinder();
 
@@ -69,18 +83,46 @@ public class BeaconService extends Service {
                 }else{
                     //dafuq
                 }
+            }
+        });
 
-                /*String s = "";
-                for(Beacon temp : list){
-                    s += "Beacons found:" + temp.getProximityUUID().toString() + "\n";
-                }
-                Log.d("monii","beacon discovered");
-                String temp ="found one";
 
+        cloudManager = new IndoorCloudManagerFactory().create(this);
+        //TODO change indentifier
+        cloudManager.getLocation("my-kitchen", new CloudCallback<Location>() {
+            @Override
+            public void success(Location location) {
+                // store the Location object for later,
+                // you will need it to initialize the IndoorLocationManager!
+                //
+                // you can also pass it to IndoorLocationView to display a map:
+                // indoorView = (IndoorLocationView) findViewById(R.id.indoor_view);
+                // indoorView.setLocation(location);
+                BeaconService.this.location = location;
+            }
+
+            @Override
+            public void failure(EstimoteCloudException serverException) {
+                Log.d("cloudService","Getting Location from Cloud failed");
                 Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, s);
-                sendBroadcast(broadcast);
-                Log.d("moni","sending msg:" +temp);*/
+                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM,
+                        "Getting Location from Cloud failed");
+                sendBroadcast(broadcast);            }
+        });
+
+
+        indoorManager = new IndoorLocationManagerBuilder(this,location).withDefaultScanner().build();
+        indoorManager.setOnPositionUpdateListener(new OnPositionUpdateListener() {
+            @Override
+            public void onPositionUpdate(LocationPosition position) {
+                // here, we update the IndoorLocationView with the current position,
+                // but you can use the position for anything you want
+                //TODO do smth
+            }
+
+            @Override
+            public void onPositionOutsideLocation() {
+                //TODO do SMTH
             }
         });
 
@@ -122,6 +164,7 @@ public class BeaconService extends Service {
                 Log.d("ranging","started");
             }
         });
+        indoorManager.startPositioning();
     }
 
     @Override
@@ -132,7 +175,9 @@ public class BeaconService extends Service {
 
     @Override
     public boolean onUnbind(Intent intent) {
+
         beaconManager.disconnect();
+        indoorManager.stopPositioning();
 
         //Service wird sicher beendet sobald sich jemand unbindet
         this.stopSelf();
