@@ -89,7 +89,7 @@ public class BeaconService extends Service {
 
         cloudManager = new IndoorCloudManagerFactory().create(this);
         //TODO change indentifier
-        cloudManager.getLocation("my-kitchen", new CloudCallback<Location>() {
+        cloudManager.getLocation("nats--room", new CloudCallback<Location>() {
             @Override
             public void success(Location location) {
                 // store the Location object for later,
@@ -98,12 +98,31 @@ public class BeaconService extends Service {
                 // you can also pass it to IndoorLocationView to display a map:
                 // indoorView = (IndoorLocationView) findViewById(R.id.indoor_view);
                 // indoorView.setLocation(location);
+
                 BeaconService.this.location = location;
+                Log.d("cloudService","Got location: " + location.getName());
+                indoorManager = new IndoorLocationManagerBuilder(BeaconService.this,location).withDefaultScanner().build();
+                indoorManager.setOnPositionUpdateListener(new OnPositionUpdateListener() {
+                    @Override
+                    public void onPositionUpdate(LocationPosition position) {
+                        // here, we update the IndoorLocationView with the current position,
+                        // but you can use the position for anything you want
+                        //TODO do smth
+                    }
+
+                    @Override
+                    public void onPositionOutsideLocation() {
+                        //TODO do SMTH
+                    }
+                });
+
+                indoorManager.startPositioning();
+
             }
 
             @Override
             public void failure(EstimoteCloudException serverException) {
-                Log.d("cloudService","Getting Location from Cloud failed");
+                Log.d("cloudService","Getting Location from Cloud failed: "+ serverException.toString());
                 Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
                 broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM,
                         "Getting Location from Cloud failed");
@@ -111,20 +130,6 @@ public class BeaconService extends Service {
         });
 
 
-        indoorManager = new IndoorLocationManagerBuilder(this,location).withDefaultScanner().build();
-        indoorManager.setOnPositionUpdateListener(new OnPositionUpdateListener() {
-            @Override
-            public void onPositionUpdate(LocationPosition position) {
-                // here, we update the IndoorLocationView with the current position,
-                // but you can use the position for anything you want
-                //TODO do smth
-            }
-
-            @Override
-            public void onPositionOutsideLocation() {
-                //TODO do SMTH
-            }
-        });
 
         Map<String, List<String>> placesByBeacons = new HashMap<>();
         placesByBeacons.put("3:2", new ArrayList<String>() {{
@@ -164,7 +169,6 @@ public class BeaconService extends Service {
                 Log.d("ranging","started");
             }
         });
-        indoorManager.startPositioning();
     }
 
     @Override
