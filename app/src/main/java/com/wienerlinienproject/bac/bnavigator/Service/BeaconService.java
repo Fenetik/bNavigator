@@ -18,6 +18,7 @@ import com.estimote.indoorsdk.cloud.IndoorCloudManager;
 import com.estimote.indoorsdk.cloud.IndoorCloudManagerFactory;
 import com.estimote.indoorsdk.cloud.Location;
 import com.estimote.indoorsdk.cloud.LocationPosition;
+import com.estimote.indoorsdk.view.IndoorLocationView;
 import com.wienerlinienproject.bac.bnavigator.Presentation.MainActivity;
 
 import java.util.ArrayList;
@@ -36,7 +37,9 @@ public class BeaconService extends Service {
     private BeaconRegion region;
 
     private IndoorCloudManager cloudManager;
+    private IndoorLocationView indoorView;
     private ScanningIndoorLocationManager indoorManager;
+    private LocationPosition position;
     private Location location;
 
     private final IBinder mBinder = new BeaconBinder();
@@ -49,7 +52,6 @@ public class BeaconService extends Service {
         super.onCreate();
 
         beaconManager = new BeaconManager(getApplicationContext());
-
         region = new BeaconRegion("ranged region", null, null, null);
 
         Log.d("moniiii","setting Listener");
@@ -88,31 +90,32 @@ public class BeaconService extends Service {
 
 
         cloudManager = new IndoorCloudManagerFactory().create(this);
-        //TODO change indentifier
-        cloudManager.getLocation("nats--room", new CloudCallback<Location>() {
+        cloudManager.getLocation("nats--room-p7q", new CloudCallback<Location>() {
             @Override
             public void success(Location location) {
                 // store the Location object for later,
                 // you will need it to initialize the IndoorLocationManager!
                 //
                 // you can also pass it to IndoorLocationView to display a map:
-                // indoorView = (IndoorLocationView) findViewById(R.id.indoor_view);
-                // indoorView.setLocation(location);
 
                 BeaconService.this.location = location;
                 Log.d("cloudService","Got location: " + location.getName());
                 indoorManager = new IndoorLocationManagerBuilder(BeaconService.this,location).withDefaultScanner().build();
+                indoorView.setLocation(location);
                 indoorManager.setOnPositionUpdateListener(new OnPositionUpdateListener() {
                     @Override
                     public void onPositionUpdate(LocationPosition position) {
                         // here, we update the IndoorLocationView with the current position,
                         // but you can use the position for anything you want
-                        //TODO do smth
+                        Log.d("locationManager", "Got position: " + position.getX() + ", " + position.getY());
+                        BeaconService.this.position = position;
+                        //indoorView.updatePosition(position);
                     }
 
                     @Override
                     public void onPositionOutsideLocation() {
-                        //TODO do SMTH
+                        BeaconService.this.position = null;
+                        //indoorView.hidePosition();
                     }
                 });
 
@@ -150,7 +153,7 @@ public class BeaconService extends Service {
             add("Burgerking");
         }});
 
-        placesByBeacons.put("1:1", new ArrayList<String>() {{
+        placesByBeacons.put("2:1", new ArrayList<String>() {{
             add("Starbucks");
             add("Subway");
             add("Mc Donalds");
@@ -166,6 +169,7 @@ public class BeaconService extends Service {
         beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
             @Override public void onServiceReady() {
                 beaconManager.startRanging(region);
+                beaconManager.startLocationDiscovery();
                 Log.d("ranging","started");
             }
         });
@@ -204,7 +208,14 @@ public class BeaconService extends Service {
         return "Go to: "+placesNearBeacon(beacon).get(1);
     }
 
-   public class BeaconBinder extends Binder {
+    public void setIndoorView(IndoorLocationView indoorView){
+
+        this.indoorView = indoorView;
+    }
+
+    public LocationPosition getPosition(){ return position; }
+
+    public class BeaconBinder extends Binder {
 
        public BeaconService getService(){
             return BeaconService.this;

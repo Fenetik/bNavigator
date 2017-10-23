@@ -14,11 +14,11 @@ import android.os.IBinder;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.widget.TextView;
 
 import com.estimote.coresdk.common.config.EstimoteSDK;
+import com.estimote.indoorsdk.view.IndoorLocationView;
 import com.wienerlinienproject.bac.bnavigator.R;
 import com.wienerlinienproject.bac.bnavigator.Service.BeaconService;
 //import com.wienerlinienproject.bac.bnavigator.Service.CloudService;
@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private ServiceCallbackReceiver callbackReceiver = new ServiceCallbackReceiver();
     boolean beaconServiceIsBound = false;
     private TextView beaconLog;
+    private IndoorLocationView indoorView;
 
     //TODO in diesem Fall kann man nur eine Serviceconnection haben?
 
@@ -42,8 +43,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        beaconLog = (TextView) findViewById(R.id.beaconLog);
-        beaconLog.setMovementMethod(new ScrollingMovementMethod());
+        //beaconLog = (TextView) findViewById(R.id.beaconLog);
+        //beaconLog.setMovementMethod(new ScrollingMovementMethod());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Android M Permission check
@@ -61,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 builder.show();
             }
         }
+
+        indoorView = (IndoorLocationView) findViewById(R.id.indoor_view);
     }
 
     @Override
@@ -74,9 +77,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         Intent intentBeaconService = new Intent(this, BeaconService.class);
         bindService(intentBeaconService, this, Context.BIND_AUTO_CREATE);
 
+
         //TODO
         //Intent intentCloudService = new Intent (this, CloudService.class);
-       //bindService(intentCloudService, this, Context.BIND_AUTO_CREATE);
+        //bindService(intentCloudService, this, Context.BIND_AUTO_CREATE);
 
         //filtern worauf der receiver hören soll (Anroid vrwendet genrel broadcast)
         IntentFilter filter = new IntentFilter();
@@ -90,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         BeaconService.BeaconBinder binder = (BeaconService.BeaconBinder) iBinder;
         beaconService = binder.getService();
         beaconServiceIsBound = true;
+        beaconService.setIndoorView(indoorView);
+        Log.d("MainActivity", "indooView uebergeben");
     }
 
     @Override
@@ -146,7 +152,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             if(intent.getAction().equals(BROADCAST_BeaconService)){
                 Log.d("ServiceCallbackReceiver", "got " + intent.getStringExtra(BROADCAST_PARAM));
 
-                beaconLog.append("\n"+intent.getStringExtra(BROADCAST_PARAM));
+                if (beaconService.getPosition() != null) {
+                    indoorView.updatePosition(beaconService.getPosition());
+                } else {
+                    indoorView.hidePosition();
+                }
+                //beaconLog.append("\n"+intent.getStringExtra(BROADCAST_PARAM));
             }
         }
     }
