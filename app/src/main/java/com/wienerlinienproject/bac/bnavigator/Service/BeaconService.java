@@ -110,7 +110,7 @@ public class BeaconService extends Service {
                         Log.d("locationManager", "Got position: " + position.getX() + ", " + position.getY());
                         BeaconService.this.position = position;
                         Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                        broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, String.valueOf(position));
+                        broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, position.getX() + "," + position.getY());
                         sendBroadcast(broadcast);
                         //indoorView.updatePosition(position);
                     }

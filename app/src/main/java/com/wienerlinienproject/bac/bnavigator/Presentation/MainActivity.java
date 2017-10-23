@@ -17,8 +17,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import java.util.List;
+import java.util.Arrays;
+
+
 import com.estimote.coresdk.common.config.EstimoteSDK;
 import com.estimote.indoorsdk.view.IndoorLocationView;
+import com.estimote.indoorsdk.cloud.LocationPosition;
 import com.wienerlinienproject.bac.bnavigator.R;
 import com.wienerlinienproject.bac.bnavigator.Service.BeaconService;
 //import com.wienerlinienproject.bac.bnavigator.Service.CloudService;
@@ -152,11 +157,17 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             if(intent.getAction().equals(BROADCAST_BeaconService)){
                 Log.d("ServiceCallbackReceiver", "got " + intent.getStringExtra(BROADCAST_PARAM));
 
-                if (beaconService.getPosition() != null) {
+                String positionStr = intent.getStringExtra(BROADCAST_PARAM);
+                List<String> positionList = Arrays.asList(positionStr.split(","));
+                double xPos = Double.valueOf(positionList.get(0));
+                double yPos = Double.valueOf(positionList.get(1));
+                indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
+
+                /*if (beaconService.getPosition() != null) {
                     indoorView.updatePosition(beaconService.getPosition());
                 } else {
                     indoorView.hidePosition();
-                }
+                }*/
                 //beaconLog.append("\n"+intent.getStringExtra(BROADCAST_PARAM));
             }
         }
