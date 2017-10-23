@@ -55,7 +55,7 @@ public class BeaconService extends Service {
         region = new BeaconRegion("ranged region", null, null, null);
 
         Log.d("moniiii","setting Listener");
-        beaconManager.setRangingListener(new BeaconManager.BeaconRangingListener() {
+        /*beaconManager.setRangingListener(new BeaconManager.BeaconRangingListener() {
             @Override
             public void onBeaconsDiscovered(BeaconRegion region, List<Beacon> list) {
                 if (!list.isEmpty()) {
@@ -86,7 +86,7 @@ public class BeaconService extends Service {
                     //dafuq
                 }
             }
-        });
+        });*/
 
 
         cloudManager = new IndoorCloudManagerFactory().create(this);
@@ -109,6 +109,9 @@ public class BeaconService extends Service {
                         // but you can use the position for anything you want
                         Log.d("locationManager", "Got position: " + position.getX() + ", " + position.getY());
                         BeaconService.this.position = position;
+                        Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
+                        broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, String.valueOf(position));
+                        sendBroadcast(broadcast);
                         //indoorView.updatePosition(position);
                     }
 
@@ -132,9 +135,7 @@ public class BeaconService extends Service {
                 sendBroadcast(broadcast);            }
         });
 
-
-
-        Map<String, List<String>> placesByBeacons = new HashMap<>();
+        /*Map<String, List<String>> placesByBeacons = new HashMap<>();
         placesByBeacons.put("3:2", new ArrayList<String>() {{
             //closest
             add("Mc Donalds");
@@ -149,7 +150,7 @@ public class BeaconService extends Service {
             add("Mc Donalds");
         }});
 
-        placesByBeacons.put("4:4", new ArrayList<String>() {{
+        placesByBeacons.put("1:2", new ArrayList<String>() {{
             add("Burgerking");
         }});
 
@@ -159,7 +160,7 @@ public class BeaconService extends Service {
             add("Mc Donalds");
         }});
         PLACES_BY_BEACONS = Collections.unmodifiableMap(placesByBeacons);
-
+*/
 
     }
 
