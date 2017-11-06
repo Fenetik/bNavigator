@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     boolean beaconServiceIsBound = false;
     private TextView beaconLog;
     private IndoorLocationView indoorView;
+    private PositionView positionView;
 
     //TODO in diesem Fall kann man nur eine Serviceconnection haben?
 
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         }
 
         indoorView = (IndoorLocationView) findViewById(R.id.indoor_view);
+        positionView = (PositionView) findViewById(R.id.position);
     }
 
     @Override
@@ -160,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 double xPos = Double.valueOf(positionList.get(0));
                 double yPos = Double.valueOf(positionList.get(1));
                 indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
+                positionView.updatePosition(xPos, yPos);
 
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
                 indoorView.setLocation(beaconService.getLocation());

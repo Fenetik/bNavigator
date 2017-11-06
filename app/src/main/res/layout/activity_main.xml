@@ -6,14 +6,20 @@
     android:layout_height="match_parent"
     tools:context="com.wienerlinienproject.bac.bnavigator.Presentation.MainActivity">
 
-    <ImageView
+    <!--<ImageView
         android:src="@drawable/unbenannt"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent" /> -->
 
     <com.estimote.indoorsdk.view.IndoorLocationView
         android:id="@+id/indoor_view"
         android:layout_height="match_parent"
         android:layout_width="match_parent" />
+
+
+    <com.wienerlinienproject.bac.bnavigator.Presentation.PositionView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/position" />
 
 </FrameLayout>

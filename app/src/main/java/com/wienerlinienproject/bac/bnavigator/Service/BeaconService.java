@@ -140,8 +140,6 @@ public class BeaconService extends Service {
         return "Go to: "+placesNearBeacon(beacon).get(1);
     }
 
-    public LocationPosition getPosition(){ return position; }
-
     public class BeaconBinder extends Binder {
 
        public BeaconService getService(){
