@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -25,8 +27,10 @@ public class PositionView  extends View{
         positionPaint = new Paint();
         positionPaint.setColor(Color.BLUE);
 
-        mPointerX = 100.0f;
+        mPointerX = 300.0f;
         mPointerY = 800.0f;
+
+        //movePlayer0Runnable.run(); //this is the initial call to draw player at index 0
 
         Log.d("PositionView", "init done");
     }
@@ -45,8 +49,6 @@ public class PositionView  extends View{
         float ww = (float)w - xpad;
         float hh = (float)h - ypad;
 
-        // Figure out how big we can make the pie.
-        float diameter = Math.min(ww, hh);
     }
 
     public void updatePosition(double xPos, double yPos){
@@ -67,5 +69,13 @@ public class PositionView  extends View{
 
         Log.d("PositionView", "drawing done");
     }
+
+   /** Handler handler = new Handler(Looper.getMainLooper());
+    Runnable movePlayer0Runnable = new Runnable(){
+        public void run(){
+            invalidate(); //will trigger the onDraw
+            handler.postDelayed(this,5000); //in 5 sec player0 will move again
+        }
+    };*/
 
 }

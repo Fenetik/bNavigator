@@ -101,7 +101,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         BeaconService.BeaconBinder binder = (BeaconService.BeaconBinder) iBinder;
         beaconService = binder.getService();
         beaconServiceIsBound = true;
-        Log.d("MainActivity", "indooView uebergeben");
     }
 
     @Override
@@ -161,8 +160,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 List<String> positionList = Arrays.asList(positionStr.split(","));
                 double xPos = Double.valueOf(positionList.get(0));
                 double yPos = Double.valueOf(positionList.get(1));
-                indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
                 positionView.updatePosition(xPos, yPos);
+                indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
 
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
                 indoorView.setLocation(beaconService.getLocation());
