@@ -62,12 +62,10 @@ public class PositionView  extends View{
         double locationWidth = 5.5;
         double locationHeight = 5.5;
 
-        mPointerX = (float) (locationWidth/xPos * viewWidth);
-        mPointerY = (float) (yPos/locationHeight * viewHeight);
+        mPointerX = (float) (xPos/locationWidth * viewWidth);
+        mPointerY = (float) ((5.5-yPos)/locationHeight * viewHeight);
 
         Log.d("updatePos", "Pos:" + xPos +" "+ yPos + "Pointer:" + mPointerX +" "+ mPointerY);
-
-        invalidate();
 
     }
 
@@ -80,7 +78,7 @@ public class PositionView  extends View{
         Log.d("PositionView", "drawing done");
     }
 
-   /** Handler handler = new Handler(Looper.getMainLooper());
+    /**Handler handler = new Handler(Looper.getMainLooper());
     Runnable movePlayer0Runnable = new Runnable(){
         public void run(){
             invalidate(); //will trigger the onDraw
