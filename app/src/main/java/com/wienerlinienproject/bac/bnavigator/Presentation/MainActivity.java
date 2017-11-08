@@ -160,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 List<String> positionList = Arrays.asList(positionStr.split(","));
                 double xPos = Double.valueOf(positionList.get(0));
                 double yPos = Double.valueOf(positionList.get(1));
-                positionView.updatePosition(xPos, yPos);
+                positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
                 indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
 
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {

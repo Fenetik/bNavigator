@@ -16,6 +16,9 @@ public class PositionView  extends View{
     private float mPointerRadius = 30.0f;
     private float mPointerX;
     private float mPointerY;
+    private double indoorViewHeight;
+    private double indoorViewWidth;
+
 
     public PositionView (Context context, AttributeSet attr) {
         super(context, attr);
@@ -51,13 +54,20 @@ public class PositionView  extends View{
 
     }
 
-    public void updatePosition(double xPos, double yPos){
+    public void updatePosition(double xPos, double yPos, double viewHeight, double viewWidth){
 
-        mPointerX = (float) xPos;
-        mPointerY = (float) yPos;
+        indoorViewHeight = viewHeight;
+        indoorViewWidth = viewWidth;
 
-        Canvas canvas = new Canvas();
-        draw(canvas);
+        double locationWidth = 5.5;
+        double locationHeight = 5.5;
+
+        mPointerX = (float) (locationWidth/xPos * viewWidth);
+        mPointerY = (float) (yPos/locationHeight * viewHeight);
+
+        Log.d("updatePos", "Pos:" + xPos +" "+ yPos + "Pointer:" + mPointerX +" "+ mPointerY);
+
+        invalidate();
 
     }
 
