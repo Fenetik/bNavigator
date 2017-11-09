@@ -1,18 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.wienerlinienproject.bac.bnavigator.Presentation.MainActivity">
-
-    <TextView android:text="Finding Beacons/Locations"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true">
+
+    <!--<ImageView
+        android:src="@drawable/unbenannt"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" /> -->
+
+    <com.estimote.indoorsdk.view.IndoorLocationView
+        android:id="@+id/indoor_view"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent" />
+
+
+    <com.wienerlinienproject.bac.bnavigator.Presentation.PositionView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/position" />
+
+    </FrameLayout>
+
+    <TextView android:text="Finding Beacons/Locations"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:id="@+id/beaconLog"
+        android:lines="5"
         android:scrollbars = "vertical"
         android:gravity="bottom"
         tools:layout_editor_absoluteY="0dp"
-        tools:layout_editor_absoluteX="0dp" />
+        tools:layout_editor_absoluteX="0dp"
+        android:layout_alignParentBottom="true"/>
 
-</android.support.constraint.ConstraintLayout>
+</RelativeLayout>

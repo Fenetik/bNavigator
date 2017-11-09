@@ -18,7 +18,13 @@ import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.widget.TextView;
 
+import java.util.List;
+import java.util.Arrays;
+
+
 import com.estimote.coresdk.common.config.EstimoteSDK;
+import com.estimote.indoorsdk.view.IndoorLocationView;
+import com.estimote.indoorsdk.cloud.LocationPosition;
 import com.wienerlinienproject.bac.bnavigator.R;
 import com.wienerlinienproject.bac.bnavigator.Service.BeaconService;
 //import com.wienerlinienproject.bac.bnavigator.Service.CloudService;
@@ -33,17 +39,19 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private ServiceCallbackReceiver callbackReceiver = new ServiceCallbackReceiver();
     boolean beaconServiceIsBound = false;
     private TextView beaconLog;
+    private IndoorLocationView indoorView;
+    private PositionView positionView;
 
     //TODO in diesem Fall kann man nur eine Serviceconnection haben?
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //hier sollen nur sachen rein die die UI benötigt
+
+        // Framelyout wäre gut für karte im hintergrund zeichen
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        beaconLog = (TextView) findViewById(R.id.beaconLog);
-        beaconLog.setMovementMethod(new ScrollingMovementMethod());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Android M Permission check
@@ -61,6 +69,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 builder.show();
             }
         }
+
+        indoorView = (IndoorLocationView) findViewById(R.id.indoor_view);
+        positionView = (PositionView) findViewById(R.id.position);
+        beaconLog = (TextView) findViewById(R.id.beaconLog);
+        beaconLog.setMovementMethod(new ScrollingMovementMethod());
     }
 
     @Override
@@ -74,14 +87,15 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         Intent intentBeaconService = new Intent(this, BeaconService.class);
         bindService(intentBeaconService, this, Context.BIND_AUTO_CREATE);
 
+
         //TODO
         //Intent intentCloudService = new Intent (this, CloudService.class);
-       //bindService(intentCloudService, this, Context.BIND_AUTO_CREATE);
+        //bindService(intentCloudService, this, Context.BIND_AUTO_CREATE);
 
         //filtern worauf der receiver hören soll (Anroid vrwendet genrel broadcast)
         IntentFilter filter = new IntentFilter();
         filter.addAction(ServiceCallbackReceiver.BROADCAST_BeaconService);
-        filter.addAction(ServiceCallbackReceiver.BROADCAST_cloudService);
+        filter.addAction(ServiceCallbackReceiver.BROADCAST_getLocation);
         registerReceiver(callbackReceiver, filter);
     }
 
@@ -135,18 +149,28 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public class ServiceCallbackReceiver extends BroadcastReceiver {
 
         public static final String BROADCAST_BeaconService ="com.wienerlinienproject.bac.bnavigator.beaconServiceAction";
-        public static final String BROADCAST_cloudService ="com.wienerlinienproject.bac.bnavigator.cloudServiceAction";
+        public static final String BROADCAST_getLocation ="com.wienerlinienproject.bac.bnavigator.cloudServiceGetLocation";
 
         public static final String BROADCAST_PARAM = "param";
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d("ServiceCallbackReceiver", "received callback");
+            Log.d("MainActivity_Callback", "received callback");
 
             if(intent.getAction().equals(BROADCAST_BeaconService)){
-                Log.d("ServiceCallbackReceiver", "got " + intent.getStringExtra(BROADCAST_PARAM));
+                Log.d("MainActivity_Position", "got " + intent.getStringExtra(BROADCAST_PARAM));
+                String positionStr = intent.getStringExtra(BROADCAST_PARAM);
+                List<String> positionList = Arrays.asList(positionStr.split(","));
+                double xPos = Double.valueOf(positionList.get(0));
+                double yPos = Double.valueOf(positionList.get(1));
+                positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
+                positionView.invalidate();
+                indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
+                beaconLog.append("x: " + positionView.getmPointerX() + " y: " + positionView.getmPointerY() + "\n");
 
-                beaconLog.append("\n"+intent.getStringExtra(BROADCAST_PARAM));
+            }else if(intent.getAction().equals(BROADCAST_getLocation)) {
+                indoorView.setLocation(beaconService.getLocation());
+                Log.d("MainActivity_Location", "indoorview done" );
             }
         }
     }
