@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         indoorView = (IndoorLocationView) findViewById(R.id.indoor_view);
         positionView = (PositionView) findViewById(R.id.position);
+        beaconLog = (TextView) findViewById(R.id.beaconLog);
     }
 
     @Override
@@ -163,6 +164,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
                 positionView.invalidate();
                 indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
+                beaconLog.append("x: " + positionView.getmPointerX() + " y: " + positionView.getmPointerY() + "\n");
 
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
                 indoorView.setLocation(beaconService.getLocation());

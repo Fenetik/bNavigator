@@ -1,6 +1,7 @@
 package com.wienerlinienproject.bac.bnavigator.Presentation;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -33,6 +34,7 @@ public class PositionView  extends View{
         mPointerX = 300.0f;
         mPointerY = 800.0f;
 
+
         //movePlayer0Runnable.run(); //this is the initial call to draw player at index 0
 
         Log.d("PositionView", "init done");
@@ -41,6 +43,7 @@ public class PositionView  extends View{
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         // Account for padding
+
         float xpad = (float)(getPaddingLeft() + getPaddingRight());
         float ypad = (float)(getPaddingTop() + getPaddingBottom());
 
@@ -54,6 +57,8 @@ public class PositionView  extends View{
 
     }
 
+
+
     public void updatePosition(double xPos, double yPos, double viewHeight, double viewWidth){
 
         indoorViewHeight = viewHeight;
@@ -65,9 +70,12 @@ public class PositionView  extends View{
         mPointerX = (float) (xPos/locationWidth * viewWidth);
         mPointerY = (float) ((5.5-yPos)/locationHeight * viewHeight);
 
+
         Log.d("updatePos", "Pos:" + xPos +" "+ yPos + "Pointer:" + mPointerX +" "+ mPointerY);
 
     }
+
+
 
     @Override
     protected void onDraw(Canvas canvas){
@@ -85,5 +93,13 @@ public class PositionView  extends View{
             handler.postDelayed(this,5000); //in 5 sec player0 will move again
         }
     };*/
+
+    public float getmPointerX() {
+        return mPointerX;
+    }
+
+    public float getmPointerY() {
+        return mPointerY;
+    }
 
 }
