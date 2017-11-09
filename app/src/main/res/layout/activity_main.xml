@@ -26,15 +26,13 @@
         android:layout_height="match_parent"
         android:id="@+id/position" />
 
-
-
-
     </FrameLayout>
 
     <TextView android:text="Finding Beacons/Locations"
         android:layout_width="wrap_content"
-        android:layout_height="20dp"
+        android:layout_height="wrap_content"
         android:id="@+id/beaconLog"
+        android:lines="5"
         android:scrollbars = "vertical"
         android:gravity="bottom"
         tools:layout_editor_absoluteY="0dp"

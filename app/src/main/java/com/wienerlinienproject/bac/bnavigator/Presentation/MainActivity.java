@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         indoorView = (IndoorLocationView) findViewById(R.id.indoor_view);
         positionView = (PositionView) findViewById(R.id.position);
         beaconLog = (TextView) findViewById(R.id.beaconLog);
+        beaconLog.setMovementMethod(new ScrollingMovementMethod());
     }
 
     @Override

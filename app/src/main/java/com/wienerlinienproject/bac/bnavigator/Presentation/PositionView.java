@@ -70,6 +70,9 @@ public class PositionView  extends View{
         mPointerX = (float) (xPos/locationWidth * viewWidth);
         mPointerY = (float) ((5.5-yPos)/locationHeight * viewHeight);
 
+        // Grenzen oben und unten
+        if(mPointerY > 1355) mPointerY = 1355;
+            else if (mPointerY < 450) mPointerY = 450;
 
         Log.d("updatePos", "Pos:" + xPos +" "+ yPos + "Pointer:" + mPointerX +" "+ mPointerY);
 
