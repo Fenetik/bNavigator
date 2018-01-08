@@ -9,8 +9,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private TextView beaconLog;
     private IndoorLocationView indoorView;
     private PositionView positionView;
+    //private TouchImageView imageView;
 
     //TODO in diesem Fall kann man nur eine Serviceconnection haben?
 
@@ -71,7 +74,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         }
 
         indoorView = (IndoorLocationView) findViewById(R.id.indoor_view);
-        positionView = (PositionView) findViewById(R.id.position);
+        //positionView = (PositionView) findViewById(R.id.position);
+        positionView = (PositionView) findViewById(R.id.map_view);
+
         beaconLog = (TextView) findViewById(R.id.beaconLog);
         beaconLog.setMovementMethod(new ScrollingMovementMethod());
     }
@@ -163,10 +168,18 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 List<String> positionList = Arrays.asList(positionStr.split(","));
                 double xPos = Double.valueOf(positionList.get(0));
                 double yPos = Double.valueOf(positionList.get(1));
-                positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
-                positionView.invalidate();
+                String locationName = String.valueOf(positionList.get(2));
+                //positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
+                //positionView.invalidate();
+
+                //TODO Treshhold ab wann wirklich die Grafik neu gezeichnet werden soll!!!!
+                positionView.updateUserPosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth(),
+                        ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map),locationName);
+
                 indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
                 beaconLog.append("x: " + positionView.getmPointerX() + " y: " + positionView.getmPointerY() + "\n");
+                //beaconLog.append("x: " + PositionView.getmPointerX() + " y: " + imageView.getmPointerY() + "\n");
+
 
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
                 indoorView.setLocation(beaconService.getLocation());

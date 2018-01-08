@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:height="900dp"
+    android:width="600dp"
+
+    android:viewportHeight="900"
+    android:viewportWidth="600" >
+    <path
+    android:name="natsKitchen"
+    android:strokeColor="#FFF000"
+    android:strokeWidth="3"
+    android:pathData="M200,575 h350 v-550 h-500 v350 h150 z" />
+    <path
+        android:name="natsGang"
+        android:strokeColor="#000FFF"
+        android:strokeWidth="3"
+        android:pathData="M300,575 v300 h100 v-300 z" />
+
+
+</vector>

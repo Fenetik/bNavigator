@@ -50,10 +50,11 @@ public class BeaconService extends Service {
         beaconManager = new BeaconManager(getApplicationContext());
         region = new BeaconRegion("ranged region", null, null, null);
 
+        //TODO alle locations laden
         cloudManager = new IndoorCloudManagerFactory().create(this);
         cloudManager.getLocation("nats--kitchen", new CloudCallback<Location>() {
             @Override
-            public void success(Location location) {
+            public void success(final Location location) {
 
                 BeaconService.this.location = location;
 
@@ -72,7 +73,8 @@ public class BeaconService extends Service {
                         Log.d("locationManager", "Got position: " + position.getX() + ", " + position.getY());
                         BeaconService.this.position = position;
                         Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                        broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, position.getX() + "," + position.getY());
+                        broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, position.getX() + "," +
+                                position.getY()+","+location.getName());
                         sendBroadcast(broadcast);
                     }
 

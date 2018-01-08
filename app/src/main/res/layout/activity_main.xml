@@ -10,20 +10,23 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true">
 
-    <!--<ImageView
-        android:src="@drawable/unbenannt"
+    <com.wienerlinienproject.bac.bnavigator.Presentation.PositionView
+        android:id ="@+id/map_view"
+        android:src="@drawable/drawn_map"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" /> -->
+        android:layout_height="match_parent" />
 
     <com.estimote.indoorsdk.view.IndoorLocationView
         android:id="@+id/indoor_view"
         android:layout_height="wrap_content"
-        android:layout_width="match_parent" />
+        android:layout_width="match_parent"
+        android:visibility="invisible"/>
 
 
     <com.wienerlinienproject.bac.bnavigator.Presentation.PositionView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="invisible"
         android:id="@+id/position" />
 
     </FrameLayout>

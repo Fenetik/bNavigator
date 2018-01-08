@@ -42,6 +42,7 @@ public class CloudService extends Service {
 
         cloudManager = new IndoorCloudManagerFactory().create(this);
         //TODO change indentifier
+        //TODO Mehrere Locations laden, LocationMap erstellen(wie bekommt man die in die Activity?,Bruach ich das überhaupt)
         cloudManager.getLocation("my-kitchen", new CloudCallback<Location>() {
             @Override
             public void success(Location location) {

@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "26.0.1"
+    buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "com.wienerlinienproject.bac.bnavigator"
         minSdkVersion 23
@@ -10,6 +10,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
         release {
@@ -28,5 +29,6 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:design:25.3.1'
     compile 'com.estimote:indoorsdk:1.0.1'
+    compile 'com.qozix:tileview:2.2.8'
     testCompile 'junit:junit:4.12'
 }
