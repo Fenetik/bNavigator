@@ -70,6 +70,7 @@ public class BeaconService extends Service {
                         //wenn nur 1 place in der Liste ist
                         if(places.size() == 1){
                             output += places.get(0) + " (Nothing to navigate.)";
+                            setCurrentLocation(locationMap.getLocationByName(places.get(0)));
                             Log.d("RangingListener", places.get(0));
                         }else{
                             output += places.get(0) + " "+navigate(nearestBeacon, destination);
@@ -184,7 +185,7 @@ public class BeaconService extends Service {
                     }});
                     locationMap.addLocation("Nats' kitchen", location);
                     break;*/
-                case "Nats' flur":
+                case "nats--flur":
                     location.setHeight(2.0);
                     location.setWidth(1.0);
                     location.setStartPointX(2.5);
@@ -206,9 +207,9 @@ public class BeaconService extends Service {
                     placesByBeacons.put("3:2", new ArrayList<String>() {{
                         add(currentLocation.getName());
                     }});
-                    locationMap.addLocation("Nats' room", location);
+                    locationMap.addLocation("Nats' flur", location);
                     break;
-                case "Nats’ room":
+                case "nats--room-p7q":
                     // 2:1 & 2:2 sind fix drinnen
                     location.setHeight(6.0);
                     location.setWidth(5.0);

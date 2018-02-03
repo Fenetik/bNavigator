@@ -39,4 +39,8 @@ public class LocationMap {
     public void setLocations(Map<String, LocationObject> locations) {
         this.locations = locations;
     }
+
+    public LocationObject getLocationByName(String name){
+        return locations.get(name);
+    }
 }
