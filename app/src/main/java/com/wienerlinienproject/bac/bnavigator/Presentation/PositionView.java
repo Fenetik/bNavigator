@@ -78,16 +78,20 @@ public class PositionView  extends TouchImageView{
         indoorViewHeight = viewHeight;
         indoorViewWidth = viewWidth;
 
+        //TODO breite und höhe des gesamten plans in metern
         double locationWidth = 5.5;
         double locationHeight = 5.5;
 
-        mPointerX = (float) (xPos/locationWidth * viewWidth);
-        mPointerY = (float) ((5.5-yPos)/locationHeight * viewHeight);
+        //TODO
+        int xLocation = 0;
+        int yLocation = 0;
 
-        // Grenzen oben und unten
-        //TODO stimmt nichtmehr wenn gezoomed
-        if(mPointerY > 1355) mPointerY = 1355;
-            else if (mPointerY < 450) mPointerY = 450;
+        mPointerX = (float) ((xPos+xLocation)/locationWidth);
+        //mPointerX = (float) (xPos/locationWidth * viewWidth);
+
+        mPointerY = (float) ((yPos+yLocation)/locationHeight);
+        //positionsupdate umdrehen weil in der cloud falsch gespeichert (verkehrt herum)
+        // mPointerY = (float) ((5.5-yPos)/locationHeight * viewHeight);
 
 
         Log.d("updatePos", locationName+ ": Pos:" + xPos +" "+ yPos + "Pointer:" + mPointerX +" "+ mPointerY);
@@ -104,9 +108,13 @@ public class PositionView  extends TouchImageView{
     private void drawUserPosition(Drawable drawable) {
         Bitmap bm = drawableToBitmap(drawable);
         Canvas c = new Canvas(bm);
+
+        //returnt breite/höhe in pixel (tatsächlich angezeigt)
         int maxH = bm.getHeight();
         int maxW = bm.getWidth();
-        c.drawCircle((mPointerX/getWidth())*maxW, (mPointerY/getHeight())*maxH, mPointerRadius,positionPaint);
+
+        c.drawCircle((mPointerX)*maxW, (mPointerY)*maxH, mPointerRadius,positionPaint);
+        //c.drawCircle((mPointerX/getWidth())*maxW, (mPointerY/getHeight())*maxH, mPointerRadius,positionPaint);
         Log.d("Bitmap", "Draw " + " max: " + maxW + ", " + maxH);
         setImageBitmap(bm);
     }
