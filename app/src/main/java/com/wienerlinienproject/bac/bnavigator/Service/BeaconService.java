@@ -108,15 +108,15 @@ public class BeaconService extends Service {
                         public void onPositionUpdate(LocationPosition position) {
 
                             // IndoorView UpdatePosition "zu langsam"?
-
-                            Log.d("locationManager", "Got position: " + position.getX() + ", " + position.getY());
-                            BeaconService.this.position = position;
-                            Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                            broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, position.getX() + "," +
-                                    position.getY()+","+currentLocation.getStartPointX() + "," +currentLocation.getStartPointY() + "," +location.getName());
-                            sendBroadcast(broadcast);
+                            if (currentLocation != null){
+                                Log.d("locationManager", "Got position: " + position.getX() + ", " + position.getY());
+                                BeaconService.this.position = position;
+                                Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
+                                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, position.getX() + "," +
+                                        position.getY()+","+currentLocation.getStartPointX() + "," +currentLocation.getStartPointY() + "," +location.getName());
+                                sendBroadcast(broadcast);
+                            }
                         }
-
                         @Override
                         public void onPositionOutsideLocation() {
                             BeaconService.this.position = null;
