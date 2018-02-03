@@ -168,12 +168,16 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 List<String> positionList = Arrays.asList(positionStr.split(","));
                 double xPos = Double.valueOf(positionList.get(0));
                 double yPos = Double.valueOf(positionList.get(1));
-                String locationName = String.valueOf(positionList.get(2));
+                double xStartPos = Double.valueOf(positionList.get(2));
+                double yStartPos = Double.valueOf(positionList.get(3));
+                String locationName = String.valueOf(positionList.get(4));
                 //positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
                 //positionView.invalidate();
 
                 //TODO Treshhold ab wann wirklich die Grafik neu gezeichnet werden soll!!!!
-                positionView.updateUserPosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth(),
+
+
+                positionView.updateUserPosition(xStartPos, yStartPos, xPos, yPos,indoorView.getHeight(),indoorView.getWidth(),
                         ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map),locationName);
 
                 indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));

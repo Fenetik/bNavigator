@@ -1,6 +1,8 @@
 package com.wienerlinienproject.bac.bnavigator.Data;
 
 
+import com.estimote.indoorsdk.cloud.Location;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -14,11 +16,18 @@ public class LocationObject {
     private double startPointX;
     private double startPointY;
 
+    private Location cloudLocation;
+
     // oben, unten, links, rechts
     private HashMap<Door, LocationObject> neighboursList;
 
-    public LocationObject(String name){
+    public LocationObject(String name) {
         this.name = name;
+    }
+
+    public LocationObject(String name, Location cloudLocation){
+        this.name = name;
+        this.cloudLocation = cloudLocation;
     }
 
     public LocationObject(String name, double width, double height, double startPointX, double startPointY, HashMap neighboursList){
@@ -76,5 +85,13 @@ public class LocationObject {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Location getCloudLocation() {
+        return cloudLocation;
+    }
+
+    public void setCloudLocation(Location cloudLocation) {
+        this.cloudLocation = cloudLocation;
     }
 }

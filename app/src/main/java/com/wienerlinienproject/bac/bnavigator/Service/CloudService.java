@@ -25,7 +25,7 @@ public class CloudService extends Service {
 
     //TODO Cloudservice lädt nur daten von der Cloud?
     //TODO wie arbeitet ein service mit einem anderen service? zusammenspiel cloudservice und beaconmanager bzw indoormanager?
-    private  IndoorCloudManager cloudManager;
+    private IndoorCloudManager cloudManager;
     private ScanningIndoorLocationManager indoorManager;
     private Location location;
 

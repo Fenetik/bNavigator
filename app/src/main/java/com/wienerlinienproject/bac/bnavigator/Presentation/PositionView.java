@@ -73,21 +73,24 @@ public class PositionView  extends TouchImageView{
 
     }
 
-    public void updateUserPosition(double xPos, double yPos, double viewHeight, double viewWidth,Drawable drawable,String locationName){
+    public void updateUserPosition(double startPosX, double startPosY, double xPos, double yPos, double viewHeight, double viewWidth,Drawable drawable,String locationName){
 
         indoorViewHeight = viewHeight;
         indoorViewWidth = viewWidth;
 
+        //TODO breite und höhe des gesamten plans in metern
         double locationWidth = 5.5;
         double locationHeight = 5.5;
 
-        mPointerX = (float) (xPos/locationWidth * viewWidth);
-        mPointerY = (float) ((5.5-yPos)/locationHeight * viewHeight);
+        double xLocation = startPosX;
+        double yLocation = startPosY;
 
-        // Grenzen oben und unten
-        //TODO stimmt nichtmehr wenn gezoomed
-        if(mPointerY > 1355) mPointerY = 1355;
-            else if (mPointerY < 450) mPointerY = 450;
+        mPointerX = (float) ((xPos+xLocation)/locationWidth);
+        //mPointerX = (float) (xPos/locationWidth * viewWidth);
+
+        mPointerY = (float) ((yPos+yLocation)/locationHeight);
+        //positionsupdate umdrehen weil in der cloud falsch gespeichert (verkehrt herum)
+        // mPointerY = (float) ((5.5-yPos)/locationHeight * viewHeight);
 
 
         Log.d("updatePos", locationName+ ": Pos:" + xPos +" "+ yPos + "Pointer:" + mPointerX +" "+ mPointerY);

@@ -10,8 +10,13 @@
     android:strokeWidth="3"
     android:pathData="M200,575 h350 v-550 h-500 v350 h150 z" />
     <path
+        android:name="natsFlur"
+        android:strokeColor="#FF0000"
+        android:strokeWidth="3"
+        android:pathData="M250,578 v200 h100 v-200 h-100  z" />
+    <path
         android:name="natsRoom"
         android:strokeColor="#000FFF"
         android:strokeWidth="3"
-        android:pathData="M50,578 v500 h500 v-500 h-500  z" />
+        android:pathData="M50,780 v500 h500 v-500 h-500  z" />
 </vector>
