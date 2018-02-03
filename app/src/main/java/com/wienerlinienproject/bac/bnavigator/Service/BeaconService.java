@@ -35,8 +35,15 @@ public class BeaconService extends Service {
 
     private IndoorCloudManager cloudManager;
     private ScanningIndoorLocationManager indoorManager;
+
     private LocationPosition position;
     private Location location;
+    private Location activeLocation;
+    private Location locationFlur;
+    private Location locationKitchen;
+    private int tempcount = 1;
+
+
 
     private final IBinder mBinder = new BeaconBinder();
 
@@ -52,40 +59,19 @@ public class BeaconService extends Service {
 
         //TODO alle locations laden
         cloudManager = new IndoorCloudManagerFactory().create(this);
-        cloudManager.getLocation("nats--kitchen", new CloudCallback<Location>() {
+        cloudManager.getLocation("nats--kitchen-5h5", new CloudCallback<Location>() {
             @Override
             public void success(final Location location) {
 
                 BeaconService.this.location = location;
+                BeaconService.this.activeLocation = location;
+                BeaconService.this.locationKitchen = location;
 
                 Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_getLocation);
                 broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, "");
                 sendBroadcast(broadcast);
 
                 Log.d("cloudService","Got location: " + location.getName());
-                indoorManager = new IndoorLocationManagerBuilder(BeaconService.this,location).withDefaultScanner().build();
-                indoorManager.setOnPositionUpdateListener(new OnPositionUpdateListener() {
-                    @Override
-                    public void onPositionUpdate(LocationPosition position) {
-
-                        // IndoorView UpdatePosition "zu langsam"?
-
-                        Log.d("locationManager", "Got position: " + position.getX() + ", " + position.getY());
-                        BeaconService.this.position = position;
-                        Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                        broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, position.getX() + "," +
-                                position.getY()+","+location.getName());
-                        sendBroadcast(broadcast);
-                    }
-
-                    @Override
-                    public void onPositionOutsideLocation() {
-                        BeaconService.this.position = null;
-                    }
-                });
-
-                indoorManager.startPositioning();
-
             }
 
             @Override
@@ -96,6 +82,76 @@ public class BeaconService extends Service {
                         "Getting Location from Cloud failed");
                 sendBroadcast(broadcast);            }
         });
+
+        cloudManager.getLocation("nats--flur", new CloudCallback<Location>() {
+            @Override
+            public void success(final Location location) {
+
+                BeaconService.this.location = location;
+                BeaconService.this.activeLocation = location;
+                BeaconService.this.locationFlur = location;
+
+                Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_getLocation);
+                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, "");
+                sendBroadcast(broadcast);
+
+                indoorManagerInit(activeLocation);
+                Log.d("cloudService","Got location: " + location.getName());
+            }
+
+            @Override
+            public void failure(EstimoteCloudException serverException) {
+                Log.d("cloudService","Getting Location from Cloud failed: "+ serverException.toString());
+                Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
+                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM,
+                        "Getting Location from Cloud failed");
+                sendBroadcast(broadcast);            }
+        });
+
+    }
+
+    private void indoorManagerInit(final Location locationToRange) {
+
+        
+        indoorManager = new IndoorLocationManagerBuilder(BeaconService.this,locationToRange).withDefaultScanner().build();
+
+        indoorManager.setOnPositionUpdateListener(new OnPositionUpdateListener() {
+
+
+            @Override
+            public void onPositionUpdate(LocationPosition position) {
+
+
+                Log.d("locationManager", "Got position: " + position.getX() + ", " + position.getY());
+                BeaconService.this.position = position;
+                Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
+                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, position.getX() + "," +
+                        position.getY()+","+location.getName()+" COUNT:"+BeaconService.this.tempcount);
+                sendBroadcast(broadcast);
+
+
+                BeaconService.this.setCount(BeaconService.this.tempcount+1);
+
+                if(BeaconService.this.tempcount > 4){
+                    indoorManager.stopPositioning();
+                    if(locationToRange == locationKitchen){
+                        indoorManagerInit(locationFlur);
+                    }else{
+                        indoorManagerInit(locationKitchen);
+                    }
+
+                }
+
+            }
+
+            @Override
+            public void onPositionOutsideLocation() {
+                BeaconService.this.position = null;
+            }
+        });
+
+        indoorManager.startPositioning();
+
     }
 
     private void run(){
@@ -151,5 +207,9 @@ public class BeaconService extends Service {
 
     public Location getLocation() {
         return location;
+    }
+
+    public void setCount(int count) {
+        this.tempcount = count;
     }
 }
