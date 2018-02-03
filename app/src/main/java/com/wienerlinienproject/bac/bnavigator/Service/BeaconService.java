@@ -24,6 +24,7 @@ import com.wienerlinienproject.bac.bnavigator.Data.LocationObject;
 import com.wienerlinienproject.bac.bnavigator.Presentation.MainActivity;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +50,6 @@ public class BeaconService extends Service {
 
     public BeaconService() {
     }
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -59,36 +59,6 @@ public class BeaconService extends Service {
 
         cloudManager = new IndoorCloudManagerFactory().create(this);
 
-        beaconManager.setRangingListener(new BeaconManager.BeaconRangingListener() {
-            @Override
-            public void onBeaconsDiscovered(BeaconRegion region, List<Beacon> list) {
-                if (!list.isEmpty()) {
-                    Beacon nearestBeacon = list.get(0);
-                    List<String> places = placesNearBeacon(nearestBeacon);
-                    String output = "";
-                    if(!places.isEmpty()){
-                        //wenn nur 1 place in der Liste ist
-                        if(places.size() == 1){
-                            output += places.get(0) + " (Nothing to navigate.)";
-                            setCurrentLocation(locationMap.getLocationByName(places.get(0)));
-                            Log.d("RangingListener", places.get(0));
-                        }else{
-                            output += places.get(0) + " "+navigate(nearestBeacon, destination);
-                            Log.d("RangingListener", places.get(0));
-                        }
-                    }else {
-                        output+= "No new places";
-                        Log.d("RangingListener", "No new places");
-                    }
-                    /*Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                    broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, output);
-                    sendBroadcast(broadcast);*/
-                    Log.d("moni","sending msg:" +output);
-                }else{
-                    //dafuq
-                }
-            }
-        });
         allLocations = new ArrayList<>();
         cloudManager.getAllLocations(new CloudCallback<List<Location>>() {
             @Override
@@ -126,6 +96,7 @@ public class BeaconService extends Service {
 
                     indoorManager.startPositioning();
                 }
+
             }
 
             @Override
@@ -140,6 +111,37 @@ public class BeaconService extends Service {
         if (!allLocations.isEmpty() && allLocations != null) {
             defineLocations();
         }
+
+       /* beaconManager.setRangingListener(new BeaconManager.BeaconRangingListener() {
+            @Override
+            public void onBeaconsDiscovered(BeaconRegion region, List<Beacon> list) {
+                if (!list.isEmpty()) {
+                    Beacon nearestBeacon = list.get(0);
+                    List<String> places = placesNearBeacon(nearestBeacon);
+                    String output = "";
+                    if(!places.isEmpty()){
+                        //wenn nur 1 place in der Liste ist
+                        if(places.size() == 1){
+                            output += places.get(0) + " (Nothing to navigate.)";
+                            setCurrentLocation(locationMap.getLocationByName(places.get(0)));
+                            Log.d("RangingListener", places.get(0));
+                        }else{
+                            output += places.get(0) + " "+navigate(nearestBeacon, destination);
+                            Log.d("RangingListener", places.get(0));
+                        }
+                    }else {
+                        output+= "No new places";
+                        Log.d("RangingListener", "No new places");
+                    }
+                    //Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
+                    //broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, output);
+                    //sendBroadcast(broadcast);
+                                      Log.d("moni","sending msg:" +output);
+                }else{
+                    //dafuq
+                }
+            }
+        });  */
     }
 
     public LocationObject getCurrentLocation() {
@@ -152,22 +154,25 @@ public class BeaconService extends Service {
     }
 
     private void defineLocations(){
-
+        Log.d("defineLocations","called");
         locationMap = new LocationMap();
         Map<String, List<String>> placesByBeacons = new HashMap<>();
         for (LocationObject location : allLocations) {
+            Log.d("defineLocations",location.getName());
             HashMap<Door, LocationObject> neighboursList;
+            Door bottomDoor = null;
             switch (location.getName()) {
-                /*case "Nats’ kitchen":
+                case "Nats’ kitchen":
                     location.setHeight(5.5);
                     location.setWidth(5.0);
                     location.setStartPointX(0.0);
                     location.setStartPointY(0.0);
-                    Door bottomDoor = new Door("bottom", 2.5, 5.5, 3.0, 5.5);
+                    bottomDoor = new Door("bottom", 2.5, 5.5, 3.0, 5.5);
                     neighboursList = new HashMap<>();
                     neighboursList.put(bottomDoor, new LocationObject("Nats’ room"));
                     location.setNeighboursList(neighboursList);
 
+                    /*
                     placesByBeacons.put("1:2", new ArrayList<String>() {{
                         add(currentLocation.getName());
                     }});
@@ -183,15 +188,18 @@ public class BeaconService extends Service {
                     placesByBeacons.put("2:2", new ArrayList<String>() {{
                         add(currentLocation.getName());
                     }});
+                    */
                     locationMap.addLocation("Nats' kitchen", location);
-                    break;*/
-                case "nats--flur":
+                    Log.d("defineLocations","Got nats-kitchen");
+
+                    break;
+                case "Nats' flur":
                     location.setHeight(2.0);
                     location.setWidth(1.0);
                     location.setStartPointX(2.5);
                     location.setStartPointY(5.5);
                     setCurrentLocation(location);
-                    Door bottomDoor = new Door("bottom", 0.1, 2.0, 0.6, 2.0);
+                    bottomDoor = new Door("bottom", 0.1, 2.0, 0.6, 2.0);
                     neighboursList = new HashMap<>();
                     neighboursList.put(bottomDoor, new LocationObject("Nats’ flur"));
                     location.setNeighboursList(neighboursList);
@@ -208,8 +216,9 @@ public class BeaconService extends Service {
                         add(currentLocation.getName());
                     }});
                     locationMap.addLocation("Nats' flur", location);
+                    Log.d("defineLocations","Got nats-flur");
                     break;
-                case "nats--room-p7q":
+                case "Nats' room":
                     // 2:1 & 2:2 sind fix drinnen
                     location.setHeight(6.0);
                     location.setWidth(5.0);
@@ -224,6 +233,7 @@ public class BeaconService extends Service {
                     list.add(location.getName());
                     placesByBeacons.put("1:2", list);
                     locationMap.addLocation("Nats' room", location);
+                    Log.d("defineLocations","Got nats-room");
                     break;
             }
 
@@ -272,9 +282,11 @@ public class BeaconService extends Service {
     }
 
     private List<String> placesNearBeacon(Beacon beacon) {
-        String beaconKey = String.format("%d:%d", beacon.getMajor(), beacon.getMinor());
-        if (PLACES_BY_BEACONS.containsKey(beaconKey)) {
-            return PLACES_BY_BEACONS.get(beaconKey);
+        if(PLACES_BY_BEACONS!= null){
+          String beaconKey = String.format("%d:%d", beacon.getMajor(), beacon.getMinor());
+            if (PLACES_BY_BEACONS.containsKey(beaconKey)) {
+                return PLACES_BY_BEACONS.get(beaconKey);
+            }
         }
         return Collections.emptyList();
     }
