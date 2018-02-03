@@ -117,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         beaconServiceIsBound = false;
     }
 
+    //TODO: check wieso app nicht beendet wird nach dem schließen sondern erst wenn sie gelöascht wird
     @Override
     protected void onDestroy() {
         super.onDestroy();

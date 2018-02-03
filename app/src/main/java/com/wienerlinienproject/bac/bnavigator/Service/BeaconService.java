@@ -58,37 +58,6 @@ public class BeaconService extends Service {
         region = new BeaconRegion("ranged region", null, null, null);
 
         cloudManager = new IndoorCloudManagerFactory().create(this);
-
-        beaconManager.setRangingListener(new BeaconManager.BeaconRangingListener() {
-            @Override
-            public void onBeaconsDiscovered(BeaconRegion region, List<Beacon> list) {
-                if (!list.isEmpty()) {
-                    Beacon nearestBeacon = list.get(0);
-                    List<String> places = placesNearBeacon(nearestBeacon);
-                    String output = "";
-                    if(!places.isEmpty()){
-                        //wenn nur 1 place in der Liste ist
-                        if(places.size() == 1){
-                            output += places.get(0) + " (Nothing to navigate.)";
-                            setCurrentLocation(locationMap.getLocationByName(places.get(0)));
-                            Log.d("RangingListener", places.get(0));
-                        }else{
-                            output += places.get(0) + " "+navigate(nearestBeacon, destination);
-                            Log.d("RangingListener", places.get(0));
-                        }
-                    }else {
-                        output+= "No new places";
-                        Log.d("RangingListener", "No new places");
-                    }
-                    /*Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                    broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, output);
-                    sendBroadcast(broadcast);*/
-                    Log.d("moni","sending msg:" +output);
-                }else{
-                    //dafuq
-                }
-            }
-        });
         allLocations = new ArrayList<>();
         cloudManager.getAllLocations(new CloudCallback<List<Location>>() {
             @Override
@@ -140,6 +109,37 @@ public class BeaconService extends Service {
         if (!allLocations.isEmpty() && allLocations != null) {
             defineLocations();
         }
+
+        beaconManager.setRangingListener(new BeaconManager.BeaconRangingListener() {
+            @Override
+            public void onBeaconsDiscovered(BeaconRegion region, List<Beacon> list) {
+                if (!list.isEmpty()) {
+                    Beacon nearestBeacon = list.get(0);
+                    List<String> places = placesNearBeacon(nearestBeacon);
+                    String output = "";
+                    if(!places.isEmpty()){
+                        //wenn nur 1 place in der Liste ist
+                        if(places.size() == 1){
+                            output += places.get(0) + " (Nothing to navigate.)";
+                            setCurrentLocation(locationMap.getLocationByName(places.get(0)));
+                            Log.d("RangingListener", places.get(0));
+                        }else{
+                            output += places.get(0) + " "+navigate(nearestBeacon, destination);
+                            Log.d("RangingListener", places.get(0));
+                        }
+                    }else {
+                        output+= "No new places";
+                        Log.d("RangingListener", "No new places");
+                    }
+                    /*Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
+                    broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, output);
+                    sendBroadcast(broadcast);*/
+                    Log.d("moni","sending msg:" +output);
+                }else{
+                    //dafuq
+                }
+            }
+        });
     }
 
     public LocationObject getCurrentLocation() {
@@ -185,7 +185,7 @@ public class BeaconService extends Service {
                     }});
                     locationMap.addLocation("Nats' kitchen", location);
                     break;*/
-                case "nats--flur":
+                case "Nats’ flur":
                     location.setHeight(2.0);
                     location.setWidth(1.0);
                     location.setStartPointX(2.5);
@@ -201,15 +201,12 @@ public class BeaconService extends Service {
                     placesByBeacons.put("1:1", new ArrayList<String>() {{
                         add(currentLocation.getName());
                     }});
-                    placesByBeacons.put("1:2", new ArrayList<String>() {{
-                        add(currentLocation.getName());
-                    }});
                     placesByBeacons.put("3:2", new ArrayList<String>() {{
                         add(currentLocation.getName());
                     }});
                     locationMap.addLocation("Nats' flur", location);
                     break;
-                case "nats--room-p7q":
+                case "Nats' room":
                     // 2:1 & 2:2 sind fix drinnen
                     location.setHeight(6.0);
                     location.setWidth(5.0);
@@ -223,6 +220,12 @@ public class BeaconService extends Service {
                     list.add(currentLocation.getName());
                     list.add(location.getName());
                     placesByBeacons.put("1:2", list);
+                    placesByBeacons.put("2:1", new ArrayList<String>() {{
+                        add("Nats' room");
+                    }});
+                    placesByBeacons.put("2:2", new ArrayList<String>() {{
+                        add("Nats' room");
+                    }});
                     locationMap.addLocation("Nats' room", location);
                     break;
             }
@@ -253,6 +256,7 @@ public class BeaconService extends Service {
     @Override
     public boolean onUnbind(Intent intent) {
 
+        beaconManager.stopRanging(region);
         beaconManager.disconnect();
         indoorManager.stopPositioning();
         //Service wird sicher beendet sobald sich jemand unbindet
