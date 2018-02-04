@@ -2,7 +2,7 @@
     android:height="900dp"
     android:width="600dp"
 
-    android:viewportHeight="1200"
+    android:viewportHeight="1400"
     android:viewportWidth="600">
     <path
     android:name="natsKitchen"

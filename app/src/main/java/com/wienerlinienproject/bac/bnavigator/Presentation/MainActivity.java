@@ -70,6 +70,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     }
                 });
                 builder.show();
+            }else{
+                Log.d("beaconInit","Location access already granted");
+                serviceStart();
             }
         }
 
@@ -85,7 +88,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     protected void onStart() {
         //hier sachen rein die unabhängig von der UI geladen werden können
         super.onStart();
+    }
 
+    private void serviceStart(){
         // AppId and AppToken von der developer.estimote-website
         EstimoteSDK.initialize(getApplicationContext(), "natasa-nikic-info-s-your-o-e6g", "b437d62cd736bece0f9a475fe861e3d4");
 
@@ -133,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             case PERMISSION_REQUEST_COARSE_LOCATION: {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d("BeaconInit", "coarse location permission granted");
+                    serviceStart();
                 } else {
                     final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setTitle("Functionality limited");
