@@ -1,8 +1,6 @@
 package com.wienerlinienproject.bac.bnavigator.Data;
 
-import android.graphics.Canvas;
 
-import com.estimote.indoorsdk.cloud.Location;
 
 import java.util.HashMap;
 import java.util.Map;

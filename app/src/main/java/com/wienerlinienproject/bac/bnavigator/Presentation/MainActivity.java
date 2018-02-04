@@ -23,10 +23,8 @@ import android.widget.TextView;
 import java.util.List;
 import java.util.Arrays;
 
-
-import com.estimote.coresdk.common.config.EstimoteSDK;
-import com.estimote.indoorsdk.view.IndoorLocationView;
-import com.estimote.indoorsdk.cloud.LocationPosition;
+import com.estimote.indoorsdk_module.cloud.LocationPosition;
+import com.estimote.indoorsdk_module.view.IndoorLocationView;
 import com.wienerlinienproject.bac.bnavigator.R;
 import com.wienerlinienproject.bac.bnavigator.Service.BeaconService;
 //import com.wienerlinienproject.bac.bnavigator.Service.CloudService;
@@ -41,9 +39,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private ServiceCallbackReceiver callbackReceiver = new ServiceCallbackReceiver();
     boolean beaconServiceIsBound = false;
     private TextView beaconLog;
-    private IndoorLocationView indoorView;
     private PositionView positionView;
-    //private TouchImageView imageView;
+   // private TouchImageView imageView;
+    private IndoorLocationView indoorView;
 
     //TODO in diesem Fall kann man nur eine Serviceconnection haben?
 
@@ -85,9 +83,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     protected void onStart() {
         //hier sachen rein die unabhängig von der UI geladen werden können
         super.onStart();
-
-        // AppId and AppToken von der developer.estimote-website
-        EstimoteSDK.initialize(getApplicationContext(), "natasa-nikic-info-s-your-o-e6g", "b437d62cd736bece0f9a475fe861e3d4");
 
         Intent intentBeaconService = new Intent(this, BeaconService.class);
         bindService(intentBeaconService, this, Context.BIND_AUTO_CREATE);
@@ -178,11 +173,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
                 indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
                 beaconLog.append("x: " + positionView.getmPointerX() + " y: " + positionView.getmPointerY() + "\n");
-                //beaconLog.append("x: " + PositionView.getmPointerX() + " y: " + imageView.getmPointerY() + "\n");
+                //beaconLog.append("x: " + positionView.getmPointerX() + " y: " + imageView.getmPointerY() + "\n");
 
 
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
-                indoorView.setLocation(beaconService.getLocation());
+//                indoorView.setLocation(beaconService.getLocation());
                 Log.d("MainActivity_Location", "indoorview done" );
             }
         }

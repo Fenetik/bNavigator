@@ -6,35 +6,41 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.estimote.coresdk.cloud.api.CloudCallback;
-import com.estimote.coresdk.common.exception.EstimoteCloudException;
-import com.estimote.coresdk.observation.region.beacon.BeaconRegion;
-import com.estimote.coresdk.recognition.packets.Beacon;
-import com.estimote.coresdk.service.BeaconManager;
-import com.estimote.indoorsdk.algorithm.IndoorLocationManagerBuilder;
-import com.estimote.indoorsdk.algorithm.OnPositionUpdateListener;
-import com.estimote.indoorsdk.algorithm.ScanningIndoorLocationManager;
-import com.estimote.indoorsdk.cloud.IndoorCloudManager;
-import com.estimote.indoorsdk.cloud.IndoorCloudManagerFactory;
-import com.estimote.indoorsdk.cloud.Location;
-import com.estimote.indoorsdk.cloud.LocationPosition;
+import com.estimote.cloud_plugin.common.EstimoteCloudCredentials;
+import com.estimote.indoorsdk.IndoorLocationManagerBuilder;
+import com.estimote.indoorsdk_module.algorithm.OnPositionUpdateListener;
+import com.estimote.indoorsdk_module.algorithm.ScanningIndoorLocationManager;
+import com.estimote.indoorsdk_module.cloud.CloudCallback;
+import com.estimote.indoorsdk_module.cloud.EstimoteCloudException;
+import com.estimote.indoorsdk_module.cloud.IndoorCloudManager;
+import com.estimote.indoorsdk_module.cloud.IndoorCloudManagerFactory;
+import com.estimote.indoorsdk_module.cloud.Location;
+import com.estimote.indoorsdk_module.cloud.LocationPosition;
+import com.estimote.internal_plugins_api.cloud.CloudCredentials;
+import com.estimote.internal_plugins_api.scanning.Beacon;
+import com.estimote.internal_plugins_api.scanning.BluetoothScanner;
+import com.estimote.internal_plugins_api.scanning.EstimoteTelemetryFull;
+import com.estimote.internal_plugins_api.scanning.ScanHandler;
+import com.estimote.scanning_sdk.api.EstimoteBluetoothScannerFactory;
 import com.wienerlinienproject.bac.bnavigator.Presentation.MainActivity;
+
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+
 public class BeaconService extends Service {
 
 
     private  Map<String, List<String>> PLACES_BY_BEACONS;
-    private String destination = "Mc Donalds";
-
-    private BeaconManager beaconManager;
-    private BeaconRegion region;
-
     private IndoorCloudManager cloudManager;
     private ScanningIndoorLocationManager indoorManager;
+    private final CloudCredentials cloudCredentials = new EstimoteCloudCredentials("natasa-nikic-info-s-your-o-e6g",
+                                                                      "b437d62cd736bece0f9a475fe861e3d4");
+
 
     private LocationPosition position;
     private Location location;
@@ -43,7 +49,7 @@ public class BeaconService extends Service {
     private Location locationKitchen;
     private int tempcount = 1;
 
-
+    private BluetoothScanner scanner;
 
     private final IBinder mBinder = new BeaconBinder();
 
@@ -54,22 +60,37 @@ public class BeaconService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        beaconManager = new BeaconManager(getApplicationContext());
-        region = new BeaconRegion("ranged region", null, null, null);
-
         //TODO alle locations laden
-        cloudManager = new IndoorCloudManagerFactory().create(this);
-        cloudManager.getLocation("nats--flur", new CloudCallback<Location>() {
+
+
+        /*scanner = new EstimoteBluetoothScannerFactory(this).getSimpleScanner();
+        ScanHandler scanHandler = scanner.estimoteTelemetryFullScan()
+                .withBalancedPowerMode()
+                .withOnPacketFoundAction(new Function1<EstimoteTelemetryFull, Unit>() {
+                    @Override
+                    public Unit invoke(EstimoteTelemetryFull estimoteTelemetryFull) {
+
+                        Log.d("telemetrie", estimoteTelemetryFull.getIdentifier());
+                        return null;
+                    }
+                })
+                .start();*/
+
+
+        cloudManager = new IndoorCloudManagerFactory().create(this,cloudCredentials);
+        cloudManager.getLocation("nats--room-p7q", new CloudCallback<Location>() {
             @Override
             public void success(final Location location) {
 
                 BeaconService.this.location = location;
                 BeaconService.this.activeLocation = location;
-                BeaconService.this.locationKitchen = location;
+                BeaconService.this.locationFlur = location;
 
                 Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_getLocation);
                 broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, "");
                 sendBroadcast(broadcast);
+
+                indoorManagerInit(locationFlur);
 
                 Log.d("cloudService","Got location: " + location.getName());
             }
@@ -87,43 +108,12 @@ public class BeaconService extends Service {
             @Override
             public void success(final Location location) {
 
-                BeaconService.this.location = location;
                 BeaconService.this.activeLocation = location;
-                BeaconService.this.locationFlur = location;
+                BeaconService.this.locationKitchen = location;
 
                 Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_getLocation);
                 broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, "");
                 sendBroadcast(broadcast);
-
-//                indoorManagerInit(activeLocation);
-
-                indoorManager = new IndoorLocationManagerBuilder(BeaconService.this,location).withDefaultScanner().build();
-
-                indoorManager.setOnPositionUpdateListener(new OnPositionUpdateListener() {
-
-                    @Override
-                    public void onPositionOutsideLocation() {
-                        BeaconService.this.position = null;
-                    }
-
-                    @Override
-                    public void onPositionUpdate(LocationPosition locationPosition) {
-
-                        Log.d("locationManager", "Got position: " + locationPosition.getX() + ", " + locationPosition.getY());
-                        BeaconService.this.position = locationPosition;
-                        Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                        broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, locationPosition.getX() + "," +
-                                locationPosition.getY()+","+location.getName()+" COUNT:"+BeaconService.this.tempcount);
-                        sendBroadcast(broadcast);
-
-
-                        BeaconService.this.setCount(BeaconService.this.tempcount+1);
-
-                    }
-                });
-
-                indoorManager.startPositioning();
-
 
                 Log.d("cloudService","Got location: " + location.getName());
             }
@@ -141,38 +131,36 @@ public class BeaconService extends Service {
 
     private void indoorManagerInit(final Location locationToRange) {
 
-
-        indoorManager = new IndoorLocationManagerBuilder(BeaconService.this,locationToRange).withDefaultScanner().build();
+        indoorManager = new IndoorLocationManagerBuilder(BeaconService.this,locationToRange,cloudCredentials).withDefaultScanner().build();
 
         indoorManager.setOnPositionUpdateListener(new OnPositionUpdateListener() {
-
 
             @Override
             public void onPositionUpdate(LocationPosition position) {
 
-
-                Log.d("locationManager", "Got position: " + position.getX() + ", " + position.getY());
+                Log.d("locationManager", "Got position: " + position.getX() + ", " + position.getY()+" Location:"+locationToRange.getName());
                 BeaconService.this.position = position;
                 Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
                 broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, position.getX() + "," +
-                        position.getY()+","+location.getName()+" COUNT:"+BeaconService.this.tempcount);
+                        position.getY()+","+locationToRange.getName()+" COUNT:"+BeaconService.this.tempcount);
                 sendBroadcast(broadcast);
 
 
                 BeaconService.this.setCount(BeaconService.this.tempcount+1);
 
                 if(BeaconService.this.tempcount > 4){
-                    //indoorManager.stopPositioning();
-                    if(locationToRange == locationKitchen){
-                      //  indoorManagerInit(locationFlur);
+                    BeaconService.this.setCount(1);
+                    indoorManager.stopPositioning();
+                    if(locationToRange.getName().equals(locationKitchen.getName())){
+                        Log.d("Locationchange","Changing Location to Flur");
+                        indoorManagerInit(locationFlur);
                     }else{
-                        //indoorManagerInit(locationKitchen);
+                        Log.d("Locationchange","Changing Location to Kitchen");
+                        indoorManagerInit(locationKitchen);
                     }
 
                 }
-
             }
-
             @Override
             public void onPositionOutsideLocation() {
                 BeaconService.this.position = null;
@@ -186,13 +174,6 @@ public class BeaconService extends Service {
     private void run(){
         Log.d("BeaconService", "run");
 
-        beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
-            @Override public void onServiceReady() {
-                beaconManager.startRanging(region);
-                beaconManager.startLocationDiscovery();
-                Log.d("ranging","started");
-            }
-        });
     }
 
     @Override
@@ -204,7 +185,6 @@ public class BeaconService extends Service {
     @Override
     public boolean onUnbind(Intent intent) {
 
-        beaconManager.disconnect();
         indoorManager.stopPositioning();
         //Service wird sicher beendet sobald sich jemand unbindet
         this.stopSelf();
