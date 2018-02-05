@@ -78,11 +78,11 @@ public class PositionView  extends TouchImageView{
         indoorViewHeight = viewHeight;
         indoorViewWidth = viewWidth;
 
-        //TODO breite und höhe des gesamten plans in metern
-        double locationWidth = 5.5;
-        double locationHeight = 5.5;
+        //Laut dp im drawn_map.xml
+        double locationWidth = 6.0;
+        double locationHeight = 14.0;
 
-        //TODO
+        //TODO für jede location bezugspunkt speichern (links obere ecke?)
         int xLocation = 0;
         int yLocation = 0;
 
@@ -94,7 +94,7 @@ public class PositionView  extends TouchImageView{
         // mPointerY = (float) ((5.5-yPos)/locationHeight * viewHeight);
 
 
-        Log.d("updatePos", locationName+ ": Pos:" + xPos +" "+ yPos + "Pointer:" + mPointerX +" "+ mPointerY);
+        Log.d("updatePos", locationName+ ": Pos: " + xPos +" "+ yPos + "Pointer:" + mPointerX +" "+ mPointerY);
         drawUserPosition(drawable);
 
     }
@@ -115,7 +115,7 @@ public class PositionView  extends TouchImageView{
 
         c.drawCircle((mPointerX)*maxW, (mPointerY)*maxH, mPointerRadius,positionPaint);
         //c.drawCircle((mPointerX/getWidth())*maxW, (mPointerY/getHeight())*maxH, mPointerRadius,positionPaint);
-        Log.d("Bitmap", "Draw " + " max: " + maxW + ", " + maxH);
+        Log.d("Bitmap", "Draw:" + (mPointerX)*maxW + "px, " + (mPointerY)*maxH+"px");
         setImageBitmap(bm);
     }
 

@@ -14,6 +14,6 @@ public class LocationMap {
     private Map<String,LocationObject> locations = new HashMap();
 
     public LocationMap(){
-        //TODO intitialize LocationObjects and write to Map
+        //TODO intitialize LocationObjects and write to Map (wo:beaconservice)
     }
 }
