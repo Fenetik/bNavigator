@@ -2,9 +2,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.wienerlinienproject.bac.bnavigator.Presentation.MainActivity">
+
+    <!-- "Mark Favorite", should appear as action button if possible -->
+    <item
+        android:id="@+id/action_setMark"
+        android:icon="@drawable/add_location_white_48dp"
+        android:title="@string/setMark"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/action_shareMark"
+        android:icon="@drawable/share_variant_white_48dp"
+        android:title="@string/shareMark"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/action_deleteMark"
+        android:icon="@drawable/delete_white_48dp"
+        android:title="@string/deleteMark"
+        app:showAsAction="always"/>
+
+    <!--
+    <item
+        android:id="@+id/action_deleteMark"
+        android:icon="@drawable/ic_favorite_black_48dp"
+        android:title="@string/setMark"
+        app:showAsAction="ifRoom"/>
+        -->
+    <!--
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
         app:showAsAction="never" />
+        -->
 </menu>

@@ -1,3 +1,7 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="standard_55">60dp</dimen>
+    <dimen name="standard_105">120dp</dimen>
+    <dimen name="standard_185">165dp</dimen>
+
 </resources>

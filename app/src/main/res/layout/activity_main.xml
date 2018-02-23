@@ -5,30 +5,80 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.wienerlinienproject.bac.bnavigator.Presentation.MainActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/WLRed"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true">
+        android:layout_below="@+id/my_toolbar">
 
-    <com.wienerlinienproject.bac.bnavigator.Presentation.PositionView
-        android:id ="@+id/map_view"
-        android:src="@drawable/drawn_map"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        <com.wienerlinienproject.bac.bnavigator.Presentation.PositionView
+            android:id ="@+id/map_view"
+            android:src="@drawable/drawn_map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-    <com.estimote.indoorsdk_module.view.IndoorLocationView
-        android:id="@+id/indoor_view"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:visibility="invisible"/>
+        <com.estimote.indoorsdk_module.view.IndoorLocationView
+            android:id="@+id/indoor_view"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:visibility="invisible"/>
 
 
-    <com.wienerlinienproject.bac.bnavigator.Presentation.PositionView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="invisible"
-        android:id="@+id/position" />
+            <com.wienerlinienproject.bac.bnavigator.Presentation.PositionView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="invisible"
+            android:id="@+id/position" />
 
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fabFloor1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/WLRed"
+                android:layout_marginRight="@dimen/fab_margin"
+                android:layout_marginBottom="80dp"
+                android:layout_gravity="bottom|end|right"
+                android:src="@drawable/numeric_1"/>
+
+            <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fabFloor2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/WLRed"
+            android:layout_marginRight="@dimen/fab_margin"
+            android:layout_marginBottom="80dp"
+            android:layout_gravity="bottom|end|right"
+            android:src="@drawable/numeric_2"/>
+
+            <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fabLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end|right"
+            android:layout_margin="@dimen/fab_margin"
+            android:backgroundTint="@color/WLRed"
+            android:src="@drawable/my_location_white_48dp"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fabMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginRight="@dimen/fab_margin"
+            android:layout_marginBottom="80dp"
+            android:layout_gravity="bottom|end|right"
+            app:backgroundTint="@color/WLRed"
+            android:src="@drawable/layers_white_48dp" />
     </FrameLayout>
 
     <TextView android:text="Finding Beacons/Locations"

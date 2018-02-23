@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">bNavigator</string>
     <string name="action_settings">Settings</string>
+    <string name="shareMark">Share Mark</string>
+    <string name="setMark">Set Mark</string>
+    <string name="goToMark">Go to Mark</string>
+    <string name="deleteMark">Delete Mark</string>
+    <string name="myLocaton">My Location</string>
+
 </resources>

@@ -9,15 +9,23 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.View;
 import android.widget.TextView;
 
 import java.util.List;
@@ -42,6 +50,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private PositionView positionView;
    // private TouchImageView imageView;
     private IndoorLocationView indoorView;
+    private boolean isFABOpen =false;
+
+    private FloatingActionButton fabMenu;
+    private FloatingActionButton fab1;
+    private FloatingActionButton fab2;
+
 
     //TODO in diesem Fall kann man nur eine Serviceconnection haben?
 
@@ -52,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         // Framelyout wäre gut für karte im hintergrund zeichen
 
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -77,6 +92,27 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         beaconLog = (TextView) findViewById(R.id.beaconLog);
         beaconLog.setMovementMethod(new ScrollingMovementMethod());
+
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        myToolbar.setTitle(Html.fromHtml("<font color='#ffffff'>Aspern</font>"));
+        setSupportActionBar(myToolbar);
+
+        fabMenu = (FloatingActionButton) findViewById(R.id.fabMenu);
+        fab1 = (FloatingActionButton) findViewById(R.id.fabFloor1);
+        fab2 = (FloatingActionButton) findViewById(R.id.fabFloor2);
+        fabMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!isFABOpen){
+                    showFABMenu();
+                    fabMenu.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#777777")));
+                }else{
+                    fabMenu.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#b80004")));
+                    closeFABMenu();
+                }
+            }
+        });
+
     }
 
     @Override
@@ -119,6 +155,18 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         unregisterReceiver(callbackReceiver);
     }
 
+    private void showFABMenu(){
+        isFABOpen=true;
+        fab1.animate().translationY(-getResources().getDimension(R.dimen.standard_55));
+        fab2.animate().translationY(-getResources().getDimension(R.dimen.standard_105));
+    }
+
+    private void closeFABMenu(){
+        isFABOpen=false;
+        fab1.animate().translationY(0);
+        fab2.animate().translationY(0);
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[],
@@ -143,6 +191,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 return;
             }
         }
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return true;
     }
 
 

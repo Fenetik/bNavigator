@@ -28,6 +28,13 @@ import android.view.View;
 //TODO wie bekommt man Paths einer vectorgrafik aus android raus (Wände) , sodass man sicherstellen kann dass treffpunkt nicht außerhalb der
 //Map genommen wird
 
+
+//TODO Actionbar title ist noch statisch!
+
+
+//TODO Actionbar nicht floating über view sondern die view unterhalb der actionbar sodass man die ganze view sieht
+//TODO statt sircle für eigene position, das icon für my position einzeichnen
+
 public class PositionView  extends TouchImageView{
 
     private Paint positionPaint;
