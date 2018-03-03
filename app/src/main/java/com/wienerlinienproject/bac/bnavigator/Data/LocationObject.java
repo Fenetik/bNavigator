@@ -1,6 +1,6 @@
 package com.wienerlinienproject.bac.bnavigator.Data;
 
-
+//Rooms
 public class LocationObject {
     int width; //in Meter
     int height; //in Meter

@@ -25,6 +25,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -55,6 +56,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private FloatingActionButton fabMenu;
     private FloatingActionButton fab1;
     private FloatingActionButton fab2;
+    private FloatingActionButton fabMyLocation;
+
+
+    private Toolbar myToolbar;
 
 
     //TODO in diesem Fall kann man nur eine Serviceconnection haben?
@@ -89,13 +94,23 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         indoorView = (IndoorLocationView) findViewById(R.id.indoor_view);
         //positionView = (PositionView) findViewById(R.id.position);
         positionView = (PositionView) findViewById(R.id.map_view);
+        //TODO Destination Icon laden
+        positionView.setDestinationIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_place_black_48dp));
 
         beaconLog = (TextView) findViewById(R.id.beaconLog);
         beaconLog.setMovementMethod(new ScrollingMovementMethod());
 
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         myToolbar.setTitle(Html.fromHtml("<font color='#ffffff'>Aspern</font>"));
         setSupportActionBar(myToolbar);
+
+        fabMyLocation = (FloatingActionButton) findViewById(R.id.fabLocation);
+        fabMyLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                positionView.scrollToUser();
+            }
+        });
 
         fabMenu = (FloatingActionButton) findViewById(R.id.fabMenu);
         fab1 = (FloatingActionButton) findViewById(R.id.fabFloor1);
@@ -112,7 +127,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 }
             }
         });
-
     }
 
     @Override
@@ -199,6 +213,28 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         return true;
     }
 
+    //TODO bei add destination die destination location raus holen
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()){
+            case R.id.action_setMark:
+                positionView.onSetPositionClicked();
+                myToolbar.getMenu().findItem(R.id.action_deleteMark).setVisible(true);
+                myToolbar.getMenu().findItem(R.id.action_shareMark).setVisible(true);
+                return true;
+
+            case R.id.action_deleteMark:
+                positionView.onDeletePostionClicked();
+                myToolbar.getMenu().findItem(R.id.action_deleteMark).setVisible(false);
+                myToolbar.getMenu().findItem(R.id.action_shareMark).setVisible(false);
+                return true;
+
+            case R.id.action_shareMark:
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     public class ServiceCallbackReceiver extends BroadcastReceiver {
 

@@ -815,7 +815,7 @@ public class TouchImageView extends AppCompatImageView {
      * @author Ortiz
      *
      */
-    private class PrivateOnTouchListener implements OnTouchListener {
+     class PrivateOnTouchListener implements OnTouchListener {
 
         //
         // Remember last point position for dragging

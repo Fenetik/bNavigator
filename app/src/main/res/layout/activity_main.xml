@@ -43,7 +43,7 @@
                 android:id="@+id/fabFloor1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/WLRed"
+                app:backgroundTint="@color/WLRed"
                 android:layout_marginRight="@dimen/fab_margin"
                 android:layout_marginBottom="80dp"
                 android:layout_gravity="bottom|end|right"
@@ -53,7 +53,7 @@
             android:id="@+id/fabFloor2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/WLRed"
+            app:backgroundTint="@color/WLRed"
             android:layout_marginRight="@dimen/fab_margin"
             android:layout_marginBottom="80dp"
             android:layout_gravity="bottom|end|right"
@@ -65,7 +65,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end|right"
             android:layout_margin="@dimen/fab_margin"
-            android:backgroundTint="@color/WLRed"
+            app:backgroundTint="@color/WLRed"
             android:src="@drawable/my_location_white_48dp"/>
 
         <android.support.design.widget.FloatingActionButton

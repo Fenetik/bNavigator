@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-//Stores all Location Objects
+//Stores all Location Objects (the whole facility)
 public class LocationMap {
     //die Location in der sich der User gerade befindet
     private String activeLocation;

@@ -1,18 +1,20 @@
 package com.wienerlinienproject.bac.bnavigator.Presentation;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import android.os.Looper;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 
 
 //TODO hier LocationObjekte laden oder in der Main Activity bzw die locationMap initialisieren?
@@ -31,9 +33,24 @@ import android.view.View;
 
 //TODO Actionbar title ist noch statisch!
 
-
-//TODO Actionbar nicht floating über view sondern die view unterhalb der actionbar sodass man die ganze view sieht
 //TODO statt sircle für eigene position, das icon für my position einzeichnen
+
+
+//todo pro location eine zone
+//TODO auf zoomed achten bzw ausprobieren
+//TODO bei add destination die destination location zurück geben bzw ausrechnen
+
+
+//TODO how to deep link?!
+//TODO userposition speichern
+//TODO treffpunkt position speichern (in meter relativ zum refernzpunkt der location)
+
+//TODO listener nach add location auf alten setzen..wann .. wo
+//TODO jump to my location ... how?
+//TODO treffpunkt location raus bekommen..wie?
+//TODO eine art absolute to relative koordinaten methode in locationmap?
+
+
 
 public class PositionView  extends TouchImageView{
 
@@ -43,6 +60,32 @@ public class PositionView  extends TouchImageView{
     private float mPointerY;
     private double indoorViewHeight;
     private double indoorViewWidth;
+    private Bitmap actualBitmap = null;
+    private Drawable drawable;
+
+    //TODO destinationRelativePointer
+    private Point destinationPointer;
+    private Drawable destinationIcon;
+    private String destinationLocation;
+    private Point destinationRelativePointer;
+
+
+    //TODO die userpositions müssen auf die ganze map umgerechnet werden, hier sind sie ja relativ je location
+    private float userPositionX;
+    private float userPositionY;
+    private double userPositionXpx;
+    private double userPositionYpx;
+
+
+
+
+    //Laut dp im drawn_map.xml (Breite und Höhe in Meter)
+    //TODO sollte in Locationmap ausgelagert werden
+    private double locationWidth = 6.0;
+    private double locationHeight = 14.0;
+    //TODO für jede location bezugspunkt speichern (links obere ecke?)
+    int xLocation = 0;
+    int yLocation = 0;
 
 
     public PositionView (Context context, AttributeSet attr) {
@@ -54,6 +97,12 @@ public class PositionView  extends TouchImageView{
 
         positionPaint = new Paint();
         positionPaint.setColor(Color.BLUE);
+
+        //TODO
+        userPositionX = 5;
+        userPositionY = 5;
+        userPositionXpx = 400;
+        userPositionYpx = 400;
 
         mPointerX = 300.0f;
         mPointerY = 800.0f;
@@ -85,13 +134,8 @@ public class PositionView  extends TouchImageView{
         indoorViewHeight = viewHeight;
         indoorViewWidth = viewWidth;
 
-        //Laut dp im drawn_map.xml
-        double locationWidth = 6.0;
-        double locationHeight = 14.0;
-
-        //TODO für jede location bezugspunkt speichern (links obere ecke?)
-        int xLocation = 0;
-        int yLocation = 0;
+        userPositionXpx = xPos;
+        userPositionYpx = yPos;
 
         mPointerX = (float) ((xPos+xLocation)/locationWidth);
         //mPointerX = (float) (xPos/locationWidth * viewWidth);
@@ -108,27 +152,35 @@ public class PositionView  extends TouchImageView{
 
     @Override
     protected void onDraw(Canvas canvas){
+
         super.onDraw(canvas);
+        if(destinationPointer != null){
+            canvas.drawBitmap(drawableToBitmap(destinationIcon), destinationPointer.x-65, destinationPointer.y-95,null);
+        }
+
         Log.d("PositionView", "drawing done");
     }
 
     private void drawUserPosition(Drawable drawable) {
-        Bitmap bm = drawableToBitmap(drawable);
-        Canvas c = new Canvas(bm);
+        this.drawable = drawable;
+        actualBitmap = drawableToBitmap(drawable);
+        Canvas c = new Canvas(actualBitmap);
 
         //returnt breite/höhe in pixel (tatsächlich angezeigt)
-        int maxH = bm.getHeight();
-        int maxW = bm.getWidth();
+        int maxH = actualBitmap.getHeight();
+        int maxW = actualBitmap.getWidth();
 
-        c.drawCircle((mPointerX)*maxW, (mPointerY)*maxH, mPointerRadius,positionPaint);
+        userPositionX = (mPointerX)*maxW;
+        userPositionY = (mPointerY)*maxH;
+
+        c.drawCircle(userPositionX, userPositionY, mPointerRadius,positionPaint);
         //c.drawCircle((mPointerX/getWidth())*maxW, (mPointerY/getHeight())*maxH, mPointerRadius,positionPaint);
         Log.d("Bitmap", "Draw:" + (mPointerX)*maxW + "px, " + (mPointerY)*maxH+"px");
-        setImageBitmap(bm);
+        setImageBitmap(actualBitmap);
     }
 
     public Bitmap drawableToBitmap (Drawable drawable) {
         Bitmap bitmap = null;
-
         if (drawable instanceof BitmapDrawable) {
             BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
             if(bitmapDrawable.getBitmap() != null) {
@@ -143,9 +195,83 @@ public class PositionView  extends TouchImageView{
         }
 
         Canvas canvas = new Canvas(bitmap);
+
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
         return bitmap;
+    }
+
+    //TODO Luki fragen was das genau die info bedeutet
+    //TODO alten Listener danach zurücksetzen
+    public void onSetPositionClicked(){
+        super.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int scaledX = 0;
+                int scaledY = 0;
+
+                Point point = new Point();
+                point.x = (int)event.getX();
+                point.y = (int)event.getY();
+
+                //Dadurch dass die Bitmap aufs display gescaled wird muss man dies ier beachten
+                //https://stackoverflow.com/questions/12496339/android-imageview-get-pixel-color-from-scaled-image
+                Matrix inverse = new Matrix();
+                ((ImageView) v).getImageMatrix().invert(inverse);
+                float[] touchPoint = new float[] {point.x, point.y};
+                inverse.mapPoints(touchPoint);
+                scaledX = Integer.valueOf((int)touchPoint[0]);
+                scaledY = Integer.valueOf((int)touchPoint[1]);
+
+                //getpixel returns the color of a pixel
+                int pixelColor = drawableToBitmap(((AppCompatImageView)v).getDrawable()).getPixel(scaledX,scaledY);
+                Log.d("within location","X:"+point.x +" Y: "+point.y+ "Color:" + pixelColor);
+
+                String temp = isWithinLocation(pixelColor);
+                if(temp.equals(null)){
+                    destinationPointer = null;
+                    destinationRelativePointer = null;
+                    destinationLocation = null;
+                }else{
+                    destinationPointer = point;
+                    destinationRelativePointer = null;
+                    destinationLocation = temp;
+                }
+
+                invalidate();
+
+                return false;
+            }
+        });
+    }
+
+    public void onDeletePostionClicked() {
+        if(destinationPointer != null){
+            destinationPointer = null;
+            invalidate();
+        }
+    }
+
+    //checks the backgroundcolor wether the touched point is within our building or not
+    //Background color of the inside of our building is white (000000)
+    //TODO sollte ws eher ein location object returnen?
+    private String isWithinLocation(int pixelColor) {
+        int redValue = Color.red(pixelColor);
+        int blueValue = Color.blue(pixelColor);
+        int greenValue = Color.green(pixelColor);
+
+        if(redValue == 1 && blueValue ==0 && greenValue == 0){
+            Log.d("within Location","Yes(Nats Room), "+"red:"+redValue+" blue:"+blueValue+" green:"+greenValue);
+            return "Nats Room";
+        }else if(redValue == 0 && blueValue == 1 && greenValue == 0){
+            Log.d("within Location","Yes (Nats Flur), "+"red:"+redValue+" blue:"+blueValue+" green:"+greenValue);
+            return "Nats Flur";
+        }else if (redValue == 0 && blueValue ==0 && greenValue == 1){
+            Log.d("within Location","Yes (Nats Kitchen), "+"red:"+redValue+" blue:"+blueValue+" green:"+greenValue);
+            return "Nats Kitchen";
+        }
+        Log.d("Within Location","No"+"red:"+redValue+" blue:"+blueValue+" green:"+greenValue);
+        return null;
     }
 
     public float getmPointerX() {
@@ -156,5 +282,13 @@ public class PositionView  extends TouchImageView{
         return mPointerY;
     }
 
+    public void setDestinationIcon(Drawable destinationIcon) {
+        this.destinationIcon = destinationIcon;
+    }
 
+    public void scrollToUser() {
+        setScrollPosition((float)userPositionXpx/getWidth(),(float)userPositionYpx/getHeight());
+        Log.d("ScrollingToUser","X:"+userPositionXpx +" X/Width:"+ (float)userPositionXpx/getWidth() +
+                " Y:"+userPositionYpx + " Y/Height:"+ (float)userPositionYpx/getHeight());
+    }
 }
