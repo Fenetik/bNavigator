@@ -15,6 +15,9 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toolbar;
+
+import com.wienerlinienproject.bac.bnavigator.R;
 
 
 //TODO hier LocationObjekte laden oder in der Main Activity bzw die locationMap initialisieren?
@@ -46,9 +49,9 @@ import android.widget.ImageView;
 //TODO treffpunkt position speichern (in meter relativ zum refernzpunkt der location)
 
 //TODO listener nach add location auf alten setzen..wann .. wo
-//TODO jump to my location ... how?
-//TODO treffpunkt location raus bekommen..wie?
-//TODO eine art absolute to relative koordinaten methode in locationmap?
+//TODO Action bar menü erst nach wirklichem add ändern, nicht beim click auf dem button
+
+//TODO eine art absolute to relative koordinaten umrechnungs methode in locationmap?
 
 
 
@@ -76,6 +79,7 @@ public class PositionView  extends TouchImageView{
     private double userPositionXpx;
     private double userPositionYpx;
 
+    private DestinationSetCallback destinationSetCallback;
 
 
 
@@ -90,6 +94,7 @@ public class PositionView  extends TouchImageView{
 
     public PositionView (Context context, AttributeSet attr) {
         super(context, attr);
+        destinationSetCallback = (DestinationSetCallback) context;
         init();
     }
 
@@ -201,10 +206,12 @@ public class PositionView  extends TouchImageView{
         return bitmap;
     }
 
-    //TODO Luki fragen was das genau die info bedeutet
     //TODO alten Listener danach zurücksetzen
+    //TODO is within location an MainActivity returnen um share/delete buttons anzuzeigen?
     public void onSetPositionClicked(){
+
         super.setOnTouchListener(new OnTouchListener() {
+
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 int scaledX = 0;
@@ -228,7 +235,15 @@ public class PositionView  extends TouchImageView{
                 Log.d("within location","X:"+point.x +" Y: "+point.y+ "Color:" + pixelColor);
 
                 String temp = isWithinLocation(pixelColor);
-                if(temp.equals(null)){
+
+                if(temp !=null){
+                    destinationPointer = point;
+                    destinationRelativePointer = null;
+                    destinationLocation = temp;
+                    destinationSetCallback.onDestinationSet();
+                }
+
+                /*if(temp ==null){
                     destinationPointer = null;
                     destinationRelativePointer = null;
                     destinationLocation = null;
@@ -236,13 +251,19 @@ public class PositionView  extends TouchImageView{
                     destinationPointer = point;
                     destinationRelativePointer = null;
                     destinationLocation = temp;
-                }
+                }*/
 
                 invalidate();
 
+                //TODO stack overflow ex
+                //PositionView.super.setOnTouchListener(new PrivateOnTouchListener());
                 return false;
             }
         });
+
+        //not responding
+        //super.setOnTouchListener(new PrivateOnTouchListener());
+
     }
 
     public void onDeletePostionClicked() {
@@ -260,17 +281,17 @@ public class PositionView  extends TouchImageView{
         int blueValue = Color.blue(pixelColor);
         int greenValue = Color.green(pixelColor);
 
-        if(redValue == 1 && blueValue ==0 && greenValue == 0){
+        if(redValue == 254 && blueValue ==255 && greenValue == 255){
             Log.d("within Location","Yes(Nats Room), "+"red:"+redValue+" blue:"+blueValue+" green:"+greenValue);
             return "Nats Room";
-        }else if(redValue == 0 && blueValue == 1 && greenValue == 0){
+        }else if(redValue == 255 && blueValue == 254 && greenValue == 255){
             Log.d("within Location","Yes (Nats Flur), "+"red:"+redValue+" blue:"+blueValue+" green:"+greenValue);
             return "Nats Flur";
-        }else if (redValue == 0 && blueValue ==0 && greenValue == 1){
+        }else if (redValue == 255 && blueValue ==255 && greenValue == 254){
             Log.d("within Location","Yes (Nats Kitchen), "+"red:"+redValue+" blue:"+blueValue+" green:"+greenValue);
             return "Nats Kitchen";
         }
-        Log.d("Within Location","No"+"red:"+redValue+" blue:"+blueValue+" green:"+greenValue);
+        Log.d("Within Location","No "+"red:"+redValue+" blue:"+blueValue+" green:"+greenValue);
         return null;
     }
 
@@ -291,4 +312,17 @@ public class PositionView  extends TouchImageView{
         Log.d("ScrollingToUser","X:"+userPositionXpx +" X/Width:"+ (float)userPositionXpx/getWidth() +
                 " Y:"+userPositionYpx + " Y/Height:"+ (float)userPositionYpx/getHeight());
     }
+
+    public Point getDestinationPointer() {
+        return destinationPointer;
+    }
+
+    public void resetListener (){
+        super.setOnTouchListener(new PrivateOnTouchListener());
+    }
+
+    interface DestinationSetCallback{
+        public void onDestinationSet();
+    }
 }
+

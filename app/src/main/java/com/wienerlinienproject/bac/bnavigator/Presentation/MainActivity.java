@@ -1,7 +1,10 @@
 package  com.wienerlinienproject.bac.bnavigator.Presentation;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,6 +14,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.IBinder;
@@ -28,6 +32,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 import java.util.Arrays;
@@ -39,7 +44,7 @@ import com.wienerlinienproject.bac.bnavigator.Service.BeaconService;
 //import com.wienerlinienproject.bac.bnavigator.Service.CloudService;
 
 
-public class MainActivity extends AppCompatActivity implements ServiceConnection {
+public class MainActivity extends AppCompatActivity implements ServiceConnection, PositionView.DestinationSetCallback {
 
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
@@ -219,9 +224,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         switch (item.getItemId()){
             case R.id.action_setMark:
+                //TODO boolean machen, true returnen wenn position gesetzt wurde, erst dann visible setzen
                 positionView.onSetPositionClicked();
-                myToolbar.getMenu().findItem(R.id.action_deleteMark).setVisible(true);
-                myToolbar.getMenu().findItem(R.id.action_shareMark).setVisible(true);
                 return true;
 
             case R.id.action_deleteMark:
@@ -231,9 +235,46 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 return true;
 
             case R.id.action_shareMark:
+                Point dest = positionView.getDestinationPointer();
+                if(dest == null){
+                    Toast.makeText(MainActivity.this,"Please set destination first.",Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Share your destination");
+                //TODO deep link
+                builder.setPositiveButton(android.R.string.copy, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText("ShareLocation", "Example Link");
+                        clipboard.setPrimaryClip(clip);
+                    }
+                });
+                builder.setMessage("Destination:" + dest.x + " " + dest.y);
+
+                builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                    }
+                });
+                builder.show();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onDestinationSet() {
+        myToolbar.getMenu().findItem(R.id.action_deleteMark).setVisible(true);
+        myToolbar.getMenu().findItem(R.id.action_shareMark).setVisible(true);
+
+        positionView.resetListener();
     }
 
     public class ServiceCallbackReceiver extends BroadcastReceiver {
