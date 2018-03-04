@@ -49,9 +49,10 @@ import com.wienerlinienproject.bac.bnavigator.R;
 //TODO treffpunkt position speichern (in meter relativ zum refernzpunkt der location)
 
 //TODO listener nach add location auf alten setzen..wann .. wo
-//TODO Action bar menü erst nach wirklichem add ändern, nicht beim click auf dem button
 
 //TODO eine art absolute to relative koordinaten umrechnungs methode in locationmap?
+//TODO location position icon verändert position bei zoom (locationicon in die hintergrund bitmap zeichen(delete? einfach bitmap ohne icon neu zeichen?)
+// oder bitmap darüber legen (wie bei zoomv erhalten?))
 
 
 
@@ -120,6 +121,7 @@ public class PositionView  extends TouchImageView{
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         // Account for padding
+        Log.d("zoomed","View got zoomed");
 
         float xpad = (float)(getPaddingLeft() + getPaddingRight());
         float ypad = (float)(getPaddingTop() + getPaddingBottom());
@@ -157,11 +159,11 @@ public class PositionView  extends TouchImageView{
 
     @Override
     protected void onDraw(Canvas canvas){
-
         super.onDraw(canvas);
         if(destinationPointer != null){
             canvas.drawBitmap(drawableToBitmap(destinationIcon), destinationPointer.x-65, destinationPointer.y-95,null);
         }
+
 
         Log.d("PositionView", "drawing done");
     }
@@ -318,7 +320,7 @@ public class PositionView  extends TouchImageView{
     }
 
     public void resetListener (){
-        super.setOnTouchListener(new PrivateOnTouchListener());
+        //super.setOnTouchListener(new PrivateOnTouchListener());
     }
 
     interface DestinationSetCallback{
