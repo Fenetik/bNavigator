@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.AppCompatImageView;
@@ -15,9 +16,6 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Toolbar;
-
-import com.wienerlinienproject.bac.bnavigator.R;
 
 
 //TODO hier LocationObjekte laden oder in der Main Activity bzw die locationMap initialisieren?
@@ -30,31 +28,21 @@ import com.wienerlinienproject.bac.bnavigator.R;
 //TODO Boundaries Speichern (sozusagen vom Referenzpunkt aus die Meter speichern (von height width) und so zirka boundaries speichern)
 //=> aktive location ist die von der die werte gültig in den jewieligen boudnaries liegen
 
-//TODO wie bekommt man Paths einer vectorgrafik aus android raus (Wände) , sodass man sicherstellen kann dass treffpunkt nicht außerhalb der
-//Map genommen wird
-
 
 //TODO Actionbar title ist noch statisch!
 
-//TODO statt sircle für eigene position, das icon für my position einzeichnen
+//TODO statt circle für eigene position, das icon für my position einzeichnen
 
 
 //todo pro location eine zone
-//TODO auf zoomed achten bzw ausprobieren
 //TODO bei add destination die destination location zurück geben bzw ausrechnen
 
 
 //TODO how to deep link?!
 //TODO userposition speichern
-//TODO treffpunkt position speichern (in meter relativ zum refernzpunkt der location)
-
-//TODO listener nach add location auf alten setzen..wann .. wo
+//TODO destination position speichern (in meter relativ zum refernzpunkt der location)
 
 //TODO eine art absolute to relative koordinaten umrechnungs methode in locationmap?
-//TODO location position icon verändert position bei zoom (locationicon in die hintergrund bitmap zeichen(delete? einfach bitmap ohne icon neu zeichen?)
-// oder bitmap darüber legen (wie bei zoomv erhalten?))
-
-
 
 public class PositionView  extends TouchImageView{
 
@@ -65,7 +53,7 @@ public class PositionView  extends TouchImageView{
     private double indoorViewHeight;
     private double indoorViewWidth;
     private Bitmap actualBitmap = null;
-    private Drawable drawable;
+    private Drawable initialDrawnMap;
 
     //TODO destinationRelativePointer
     private Point destinationPointer;
@@ -74,7 +62,7 @@ public class PositionView  extends TouchImageView{
     private Point destinationRelativePointer;
 
 
-    //TODO die userpositions müssen auf die ganze map umgerechnet werden, hier sind sie ja relativ je location
+    //TODO die userpositions müssen auf die ganze map umgerechnet werden, hier sind sie ja relativ je location (in locationmap auslagern?)
     private float userPositionX;
     private float userPositionY;
     private double userPositionXpx;
@@ -91,6 +79,8 @@ public class PositionView  extends TouchImageView{
     //TODO für jede location bezugspunkt speichern (links obere ecke?)
     int xLocation = 0;
     int yLocation = 0;
+    private boolean bitmapRedrawNeeded = false;
+    private Paint destinationPaint;
 
 
     public PositionView (Context context, AttributeSet attr) {
@@ -103,6 +93,9 @@ public class PositionView  extends TouchImageView{
 
         positionPaint = new Paint();
         positionPaint.setColor(Color.BLUE);
+
+        destinationPaint = new Paint();
+        destinationPaint.setColor(Color.GRAY);
 
         //TODO
         userPositionX = 5;
@@ -136,6 +129,8 @@ public class PositionView  extends TouchImageView{
 
     }
 
+    //TODO vorhandene bitmap nehmen! nicht immer die initiale drawn Map verwenden! weil desitnation icon überschrieben wird
+    //TODO locations überschreiben!
     public void updateUserPosition(double xPos, double yPos, double viewHeight, double viewWidth,Drawable drawable,String locationName){
 
         indoorViewHeight = viewHeight;
@@ -158,19 +153,78 @@ public class PositionView  extends TouchImageView{
     }
 
     @Override
-    protected void onDraw(Canvas canvas){
-        super.onDraw(canvas);
-        if(destinationPointer != null){
-            canvas.drawBitmap(drawableToBitmap(destinationIcon), destinationPointer.x-65, destinationPointer.y-95,null);
+    protected void onDraw(Canvas canvas) {
+        if (destinationPointer != null && bitmapRedrawNeeded) {
+                /*RectF zoomedRectPx = getPixelRektFromZoomRekt(getZoomedRect());
+
+                float unzoomedX = destinationPointer.x+zoomedRectPx.left;
+                float unzoomedY = destinationPointer.y+zoomedRectPx.top;
+                Log.d("positionview destZoom","Point x:" + destinationPointer.x+ " Point y:"+ destinationPointer.y + "\n+" +
+                        "Unzoomed x:" + unzoomedX + " UnzoomedY:" +unzoomedY);
+            }
+            */
+                //if(isWithinZoomedFrame(destinationPointer)){
+            if(actualBitmap != null){
+                //TODO userposition auch einzeichnen wenn bei öschen auf die intial map zurückgestiegen wird
+
+                //To delete the old destination we step back to the initial map
+                actualBitmap = drawableToBitmap(initialDrawnMap);
+                Canvas c = new Canvas(actualBitmap);
+
+
+                //returnt breite/höhe in pixel (tatsächlich angezeigt)
+                if(isZoomed()){
+                    c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x*getCurrentZoom(), destinationPointer.y*getCurrentZoom(),destinationPaint);
+                }else{
+                    c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x, destinationPointer.y,destinationPaint);
+                }
+                c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x, destinationPointer.y,destinationPaint);
+                //c.drawCircle((mPointerX/getWidth())*maxW, (mPointerY/getHeight())*maxH, mPointerRadius,positionPaint);
+                setImageBitmap(actualBitmap);
+                bitmapRedrawNeeded = false;
+            }else{
+                Bitmap temp = drawableToBitmap(initialDrawnMap);
+                Canvas c = new Canvas(temp);
+
+                //returnt breite/höhe in pixel (tatsächlich angezeigt)
+                if(isZoomed()){
+                    c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x*getCurrentZoom(), destinationPointer.y*getCurrentZoom(),destinationPaint);
+
+                }else{
+                    c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x, destinationPointer.y,destinationPaint);
+                }
+                //c.drawCircle((mPointerX/getWidth())*maxW, (mPointerY/getHeight())*maxH, mPointerRadius,positionPaint);
+                setImageBitmap(temp);
+                actualBitmap = temp;
+                bitmapRedrawNeeded = false;
+            }
+
+
+
+                //  canvas.drawBitmap(drawableToBitmap(destinationIcon), destinationPointer.x-65, destinationPointer.y-95,null);
+
+            Log.d("PositionView", "drawing done");
+
+        }else if(destinationPointer == null && bitmapRedrawNeeded){
+            //destinationpointer deleted
+            //TODO Userposition dazu zeichnen
+            //TODO bei delete jumpt die anzeige auf eine andere position wenn gezoomed ist
+            actualBitmap = drawableToBitmap(initialDrawnMap);
+            setImageBitmap(actualBitmap);
+            bitmapRedrawNeeded = false;
+        }else{
+            //IDK
         }
-
-
-        Log.d("PositionView", "drawing done");
+        super.onDraw(canvas);
     }
+    private void drawUserPosiition (){
 
+    }
     private void drawUserPosition(Drawable drawable) {
-        this.drawable = drawable;
-        actualBitmap = drawableToBitmap(drawable);
+
+        //TODO wenn die aktualle bitmap null is dann in die initial einzeichnen, ansonsten dazu zeichnen
+        //this.initialDrawnMap = drawable;
+        //actualBitmap = drawableToBitmap(drawable);
         Canvas c = new Canvas(actualBitmap);
 
         //returnt breite/höhe in pixel (tatsächlich angezeigt)
@@ -208,8 +262,6 @@ public class PositionView  extends TouchImageView{
         return bitmap;
     }
 
-    //TODO alten Listener danach zurücksetzen
-    //TODO is within location an MainActivity returnen um share/delete buttons anzuzeigen?
     public void onSetPositionClicked(){
 
         super.setOnTouchListener(new OnTouchListener() {
@@ -239,11 +291,15 @@ public class PositionView  extends TouchImageView{
                 String temp = isWithinLocation(pixelColor);
 
                 if(temp !=null){
-                    destinationPointer = point;
-                    destinationRelativePointer = null;
-                    destinationLocation = temp;
-                    destinationSetCallback.onDestinationSet();
-                }
+                    //TODO besser wäre auf koordinaten in der location konvertieren
+
+                        //Bitmat is scaled to the View, so the Event position has to be scaled to to get the actual position on the Bitmap
+                        destinationPointer = new Point (scaledX-(destinationIcon.getIntrinsicWidth()/2),scaledY-(destinationIcon.getIntrinsicHeight()/2));
+                        destinationRelativePointer = null;
+                        destinationLocation = temp;
+                        destinationSetCallback.onDestinationSet();
+                        bitmapRedrawNeeded = true;
+                    }
 
                 /*if(temp ==null){
                     destinationPointer = null;
@@ -257,20 +313,16 @@ public class PositionView  extends TouchImageView{
 
                 invalidate();
 
-                //TODO stack overflow ex
-                //PositionView.super.setOnTouchListener(new PrivateOnTouchListener());
                 return false;
             }
         });
-
-        //not responding
-        //super.setOnTouchListener(new PrivateOnTouchListener());
 
     }
 
     public void onDeletePostionClicked() {
         if(destinationPointer != null){
             destinationPointer = null;
+            bitmapRedrawNeeded = true;
             invalidate();
         }
     }
@@ -301,6 +353,29 @@ public class PositionView  extends TouchImageView{
         return mPointerX;
     }
 
+    public boolean isWithinZoomedFrame(Point p){
+        Log.d("positionview zoomedF","Normal x:"+p.x +" normal y:"+ p.y +"\n"
+        +"scaled x:" + p.x*getCurrentZoom()+" scaled y:"+p.y*getCurrentZoom());
+        if(isZoomed()){
+            RectF temp = getPixelRektFromZoomRekt(getZoomedRect());
+            Log.d("positionview zoomedR","Center x:"+temp.centerX()+" Center y:"+ temp.centerY() + "\n"+
+                    "Width:" + temp.width() + " Height:" + temp.height()+ "\n" +
+                    " left:"+ temp.left + " right:"+ temp.right + " top:" + temp.top + " bottom:" +temp.bottom + "\n"+
+                    " Point: x:" +p.x + " y:"+p.y);
+            return temp.contains(p.x,p.y);
+        }
+        return true;
+    }
+
+    private RectF getPixelRektFromZoomRekt(RectF temp) {
+        RectF temp2 = new RectF((temp.centerX()-temp.width()/2)*getWidth()
+                ,(temp.centerY()-temp.height()/2)*getHeight(),
+                (temp.centerX()+temp.width()/2)*getWidth(),(temp.centerY()+temp.height()/2)*getHeight());
+
+        Log.d("positionview pxRekt","PxRekt: left:" + temp2.left + " right:" +temp2.right + " top:"+temp2.top+ " bottom:" + temp2.bottom+"\n"+ " width:" + temp2.width() + " height:"+ temp2.height());
+        return temp2;
+    }
+
     public float getmPointerY() {
         return mPointerY;
     }
@@ -320,7 +395,11 @@ public class PositionView  extends TouchImageView{
     }
 
     public void resetListener (){
-        //super.setOnTouchListener(new PrivateOnTouchListener());
+        setOnTouchListener(null);
+    }
+
+    public void setBackgroundMap(Drawable backgroundMap) {
+        this.initialDrawnMap = backgroundMap;
     }
 
     interface DestinationSetCallback{

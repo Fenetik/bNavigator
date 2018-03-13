@@ -101,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         positionView = (PositionView) findViewById(R.id.map_view);
         //TODO Destination Icon laden
         positionView.setDestinationIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_place_black_48dp));
+        positionView.setBackgroundMap(ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map));
 
         beaconLog = (TextView) findViewById(R.id.beaconLog);
         beaconLog.setMovementMethod(new ScrollingMovementMethod());
