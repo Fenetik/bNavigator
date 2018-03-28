@@ -285,7 +285,13 @@ public class PositionView  extends TouchImageView{
                 scaledY = Integer.valueOf((int)touchPoint[1]);
 
                 //getpixel returns the color of a pixel
-                int pixelColor = drawableToBitmap(((AppCompatImageView)v).getDrawable()).getPixel(scaledX,scaledY);
+                //TODO actualbitmap verwenden?
+                int pixelColor;
+                if(actualBitmap == null){
+                    pixelColor = drawableToBitmap(initialDrawnMap).getPixel(scaledX,scaledY);
+                }else{
+                    pixelColor = actualBitmap.getPixel(scaledX,scaledY);
+                }
                 Log.d("within location","X:"+point.x +" Y: "+point.y+ "Color:" + pixelColor);
 
                 String temp = isWithinLocation(pixelColor);
