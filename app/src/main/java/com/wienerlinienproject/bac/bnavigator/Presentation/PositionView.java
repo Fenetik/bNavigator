@@ -1,5 +1,6 @@
 package com.wienerlinienproject.bac.bnavigator.Presentation;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -96,8 +97,8 @@ public class PositionView  extends TouchImageView{
         destinationPaint.setColor(Color.GRAY);
 
         //TODO
-        userPositionX = 255;
-        userPositionY = 255;
+        userPositionX = 0;
+        userPositionY = 0;
 
         mPointerX = 300.0f;
         mPointerY = 800.0f;
@@ -150,60 +151,36 @@ public class PositionView  extends TouchImageView{
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (destinationPointer != null && bitmapRedrawNeeded) {
-                /*RectF zoomedRectPx = getPixelRektFromZoomRekt(getZoomedRect());
+        Bitmap temp = drawableToBitmap(initialDrawnMap);
+        Canvas c = new Canvas(temp);
 
-                float unzoomedX = destinationPointer.x+zoomedRectPx.left;
-                float unzoomedY = destinationPointer.y+zoomedRectPx.top;
-                Log.d("positionview destZoom","Point x:" + destinationPointer.x+ " Point y:"+ destinationPointer.y + "\n+" +
-                        "Unzoomed x:" + unzoomedX + " UnzoomedY:" +unzoomedY);
-            }
-            */
-                //if(isWithinZoomedFrame(destinationPointer)){
-            if(actualBitmap != null){
-
-                //To delete the old destination we step back to the initial map
-                Canvas c = new Canvas(actualBitmap);
+        if (destinationPointer != null) {
 
 
-                //returnt breite/höhe in pixel (tatsächlich angezeigt)
-                if(isZoomed()){
-                    c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x*getCurrentZoom(), destinationPointer.y*getCurrentZoom(),destinationPaint);
-                }else{
-                    c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x, destinationPointer.y,destinationPaint);
-                }
-                c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x, destinationPointer.y,destinationPaint);
-                //c.drawCircle((mPointerX/getWidth())*maxW, (mPointerY/getHeight())*maxH, mPointerRadius,positionPaint);
-                setImageBitmap(actualBitmap);
-                bitmapRedrawNeeded = false;
+            //returnt breite/höhe in pixel (tatsächlich angezeigt)
+            if(isZoomed()){
+                c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x*getCurrentZoom(), destinationPointer.y*getCurrentZoom(),destinationPaint);
             }else{
-                Bitmap temp = drawableToBitmap(initialDrawnMap);
-                Canvas c = new Canvas(temp);
-
-                //returnt breite/höhe in pixel (tatsächlich angezeigt)
-                if(isZoomed()){
-                    c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x*getCurrentZoom(), destinationPointer.y*getCurrentZoom(),destinationPaint);
-
-                }else{
-                    c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x, destinationPointer.y,destinationPaint);
-                }
-                //c.drawCircle((mPointerX/getWidth())*maxW, (mPointerY/getHeight())*maxH, mPointerRadius,positionPaint);
-                setImageBitmap(temp);
-                actualBitmap = temp;
-                bitmapRedrawNeeded = false;
+                c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x, destinationPointer.y,destinationPaint);
             }
-
-
-
-                //  canvas.drawBitmap(drawableToBitmap(destinationIcon), destinationPointer.x-65, destinationPointer.y-95,null);
+            if(userPositionX != 0 && userPositionY != 0){
+                c.drawCircle(userPositionX, userPositionY, mPointerRadius,positionPaint);
+            }
+            //c.drawCircle((mPointerX/getWidth())*maxW, (mPointerY/getHeight())*maxH, mPointerRadius,positionPaint);
+            setImageBitmap(temp);
+            actualBitmap = temp;
+            bitmapRedrawNeeded = false;
 
             Log.d("PositionView", "drawing done");
 
-        }else if(destinationPointer == null && bitmapRedrawNeeded){
+        }else if(destinationPointer == null){
             //destinationpointer deleted
             //TODO Userposition dazu zeichnen
             //TODO bei delete jumpt die anzeige auf eine andere position wenn gezoomed ist
-            actualBitmap = drawableToBitmap(initialDrawnMap);
+            if(userPositionX != 0 && userPositionY != 0){
+                c.drawCircle(userPositionX, userPositionY, mPointerRadius,positionPaint);
+            }
+            actualBitmap = temp;
             setImageBitmap(actualBitmap);
             bitmapRedrawNeeded = false;
         }
@@ -215,10 +192,10 @@ public class PositionView  extends TouchImageView{
     private void drawUserPosition(Drawable drawable) {
 
         //TODO wenn die aktualle bitmap null is dann in die initial einzeichnen, ansonsten dazu zeichnen
-        if (destinationPointer == null && initialDrawnMap != null) {
+        //if (destinationPointer == null && initialDrawnMap != null && userPositionX == 0 && userPositionY == 0 ) {
             this.initialDrawnMap = drawable;
             actualBitmap = drawableToBitmap(initialDrawnMap);
-        }
+        //}
 
 
         //shiiiiit
@@ -231,7 +208,8 @@ public class PositionView  extends TouchImageView{
         userPositionX = (mPointerX)*maxW;
         userPositionY = (mPointerY)*maxH;
 
-        c  .drawCircle(userPositionX, userPositionY, mPointerRadius,positionPaint);
+        //TODO hier invalidate not so good i guess, aber userposition wird sonst nicht gezeichnet wenn drawcircle nicht in ondraw
+        invalidate();
         //c.drawCircle((mPointerX/getWidth())*maxW, (mPointerY/getHeight())*maxH, mPointerRadius,positionPaint);
         Log.d("Bitmap", "Draw:" + (mPointerX)*maxW + "px, " + (mPointerY)*maxH+"px");
         setImageBitmap(actualBitmap);
@@ -260,6 +238,7 @@ public class PositionView  extends TouchImageView{
         return bitmap;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     public void onSetPositionClicked(){
 
         super.setOnTouchListener(new OnTouchListener() {

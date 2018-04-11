@@ -82,7 +82,7 @@
     </FrameLayout>
 
     <TextView android:text="Finding Beacons/Locations"
-        android:layout_width="wrap_content"
+        android:layout_width="700px"
         android:layout_height="wrap_content"
         android:id="@+id/beaconLog"
         android:lines="5"

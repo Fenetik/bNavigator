@@ -7,8 +7,8 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.estimote.cloud_plugin.common.EstimoteCloudCredentials;
-import com.estimote.coresdk.observation.region.beacon.BeaconRegion;
-import com.estimote.coresdk.service.BeaconManager;
+//import com.estimote.coresdk.observation.region.beacon.BeaconRegion;
+//import com.estimote.coresdk.service.BeaconManager;
 import com.estimote.indoorsdk.IndoorLocationManagerBuilder;
 import com.estimote.indoorsdk_module.algorithm.OnPositionUpdateListener;
 import com.estimote.indoorsdk_module.algorithm.ScanningIndoorLocationManager;
@@ -73,8 +73,8 @@ public class BeaconService extends Service {
     private Location activeLocation;
     private Location locationFlur;
     private Location locationKitchen;
-    private BeaconManager beaconManager;
-    private BeaconRegion region;
+   // private BeaconManager beaconManager;
+    //private BeaconRegion region;
     private int tempcount = 1;
 
 
@@ -92,8 +92,8 @@ public class BeaconService extends Service {
         super.onCreate();
 
         //TODO alle locations laden
-        beaconManager = new BeaconManager(getApplicationContext());
-        region = new BeaconRegion("ranged region", null, null, null);
+       // beaconManager = new BeaconManager(getApplicationContext());
+        //region = new BeaconRegion("ranged region", null, null, null);
 
         cloudManager = new IndoorCloudManagerFactory().create(this,cloudCredentials);
         allLocations = new ArrayList<>();
@@ -317,7 +317,7 @@ public class BeaconService extends Service {
                 " Count:" + tempcount);
                 BeaconService.this.position = position;
                 Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, currentLocation.getStartPointX()+","+currentLocation.getStartPointX()+","+position.getX() + "," +
+                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, currentLocation.getStartPointX()+","+currentLocation.getStartPointY()+","+position.getX() + "," +
                         position.getY()+","+locationToRange.getIdentifier());
                 sendBroadcast(broadcast);
 
@@ -349,13 +349,13 @@ public class BeaconService extends Service {
 
     private void run(){
         Log.d("BeaconService", "run");
-        beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
-            @Override public void onServiceReady() {
-                beaconManager.startRanging(region);
-                beaconManager.startLocationDiscovery();
-                Log.d("ranging","started");
-            }
-        });
+//        beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
+//            @Override public void onServiceReady() {
+//                beaconManager.startRanging(region);
+//                beaconManager.startLocationDiscovery();
+//                Log.d("ranging","started");
+//            }
+//        });
     }
 
     @Override
@@ -366,8 +366,8 @@ public class BeaconService extends Service {
 
     @Override
     public boolean onUnbind(Intent intent) {
-        beaconManager.stopRanging(region);
-        beaconManager.disconnect();
+       // beaconManager.stopRanging(region);
+        //beaconManager.disconnect();
         indoorManager.stopPositioning();
         //Service wird sicher beendet sobald sich jemand unbindet
         this.stopSelf();
@@ -390,7 +390,7 @@ public class BeaconService extends Service {
         return result;
     }
 
-    private List<String> placesNearBeacon(com.estimote.coresdk.recognition.packets.Beacon beacon) {
+   /* private List<String> placesNearBeacon(com.estimote.coresdk.recognition.packets.Beacon beacon) {
         if(PLACES_BY_BEACONS!= null){
             String beaconKey = beacon.getUniqueKey();
             if (PLACES_BY_BEACONS.containsKey(beaconKey)) {
@@ -398,7 +398,7 @@ public class BeaconService extends Service {
             }
         }
         return Collections.emptyList();
-    }
+    }*/
 
     /*private String navigate(com.estimote.coresdk.recognition.packets.Beacon beacon, String destination){
 
