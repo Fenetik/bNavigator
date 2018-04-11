@@ -4,11 +4,10 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.Log;
 
 import com.estimote.cloud_plugin.common.EstimoteCloudCredentials;
-//import com.estimote.coresdk.observation.region.beacon.BeaconRegion;
-//import com.estimote.coresdk.service.BeaconManager;
 import com.estimote.indoorsdk.IndoorLocationManagerBuilder;
 import com.estimote.indoorsdk_module.algorithm.OnPositionUpdateListener;
 import com.estimote.indoorsdk_module.algorithm.ScanningIndoorLocationManager;
@@ -19,18 +18,22 @@ import com.estimote.indoorsdk_module.cloud.IndoorCloudManagerFactory;
 import com.estimote.indoorsdk_module.cloud.Location;
 import com.estimote.indoorsdk_module.cloud.LocationPosition;
 import com.estimote.internal_plugins_api.cloud.CloudCredentials;
-import com.estimote.internal_plugins_api.scanning.Beacon;
-import com.estimote.internal_plugins_api.scanning.BluetoothScanner;
-import com.estimote.internal_plugins_api.scanning.EstimoteTelemetryFull;
-import com.estimote.internal_plugins_api.scanning.ScanHandler;
-import com.estimote.scanning_sdk.api.EstimoteBluetoothScannerFactory;
 import com.wienerlinienproject.bac.bnavigator.Data.Door;
 import com.wienerlinienproject.bac.bnavigator.Data.LocationMap;
 import com.wienerlinienproject.bac.bnavigator.Data.LocationObject;
 import com.wienerlinienproject.bac.bnavigator.Presentation.MainActivity;
 
+import org.altbeacon.beacon.Beacon;
+import org.altbeacon.beacon.BeaconConsumer;
+import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.BeaconParser;
+import org.altbeacon.beacon.Identifier;
+import org.altbeacon.beacon.RangeNotifier;
+import org.altbeacon.beacon.Region;
+
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -42,7 +45,9 @@ import java.util.Map;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
-public class BeaconService extends Service {
+//TODO current location isnt changing
+
+public class BeaconService extends Service implements BeaconConsumer,RangeNotifier{
 
 
     private  Map<String, List<String>> PLACES_BY_BEACONS;
@@ -84,6 +89,9 @@ public class BeaconService extends Service {
 
     private final IBinder mBinder = new BeaconBinder();
 
+    //altbeacon manager
+    private BeaconManager altBeaconManager;
+
     public BeaconService() {
     }
 
@@ -98,6 +106,12 @@ public class BeaconService extends Service {
         cloudManager = new IndoorCloudManagerFactory().create(this,cloudCredentials);
         allLocations = new ArrayList<>();
 
+
+        altBeaconManager = BeaconManager.getInstanceForApplication(this.getApplicationContext());
+        altBeaconManager.getBeaconParsers().add(new BeaconParser().
+                setBeaconLayout("s:0-1=feaa,m:2-2=00,p:3-3:-41,i:4-13,i:14-19"));
+        altBeaconManager.bind(this);
+        Log.d("altbeaconRanging","Manager bound");
 
         /*cloudManager.getAllLocations(new CloudCallback<List<Location>>() {
             @Override
@@ -369,6 +383,7 @@ public class BeaconService extends Service {
        // beaconManager.stopRanging(region);
         //beaconManager.disconnect();
         indoorManager.stopPositioning();
+        altBeaconManager.unbind(this);
         //Service wird sicher beendet sobald sich jemand unbindet
         this.stopSelf();
 
@@ -388,6 +403,41 @@ public class BeaconService extends Service {
             result.put(entry.getKey(), entry.getValue());
         }
         return result;
+    }
+
+    @Override
+    public void onBeaconServiceConnect() {
+        Region region = new Region("all-beacons-region", null, null, null);
+        try {
+            altBeaconManager.startRangingBeaconsInRegion(region);
+            Log.d("altbeaconRanging","Starting Ranging");
+
+
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        altBeaconManager.setRangeNotifier(this);
+    }
+
+    @Override
+    public void didRangeBeaconsInRegion(Collection<Beacon> collection, Region region) {
+        Log.d("altbeaconRangin","didRangeBeaconsInReagion " + collection.size());
+        for (Beacon beacon: collection) {
+            //Log.d("altBeaconRanging",beacon.getId1()+" dist:" + beacon.getDistance());
+            //if (beacon.getServiceUuid() == 0xfeaa && beacon.getBeaconTypeCode() == 0x00) {
+                // This is a Eddystone-UID frame
+
+                Identifier namespaceId = beacon.getId1();
+                Identifier instanceId = beacon.getId2();
+
+
+                //"namespace id: " + namespaceId +
+                final String s = "ID: " + instanceId +
+                        ", Dist: " + String.format("%.5g",beacon.getDistance()) + " meters \n";
+
+                Log.d("altBeaconRanging",s);
+            //}
+        }
     }
 
    /* private List<String> placesNearBeacon(com.estimote.coresdk.recognition.packets.Beacon beacon) {
