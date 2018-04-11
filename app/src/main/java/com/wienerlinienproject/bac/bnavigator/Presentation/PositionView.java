@@ -65,8 +65,6 @@ public class PositionView  extends TouchImageView{
     //TODO die userpositions müssen auf die ganze map umgerechnet werden, hier sind sie ja relativ je location (in locationmap auslagern?)
     private float userPositionX;
     private float userPositionY;
-    private double userPositionXpx;
-    private double userPositionYpx;
 
     private DestinationSetCallback destinationSetCallback;
 
@@ -77,8 +75,8 @@ public class PositionView  extends TouchImageView{
     private double locationWidth = 6.0;
     private double locationHeight = 14.0;
     //TODO für jede location bezugspunkt speichern (links obere ecke?)
-    int xLocation = 0;
-    int yLocation = 0;
+    double xLocation = 0.5;
+    double yLocation = 7.8;
     private boolean bitmapRedrawNeeded = false;
     private Paint destinationPaint;
 
@@ -98,10 +96,8 @@ public class PositionView  extends TouchImageView{
         destinationPaint.setColor(Color.GRAY);
 
         //TODO
-        userPositionX = 5;
-        userPositionY = 5;
-        userPositionXpx = 400;
-        userPositionYpx = 400;
+        userPositionX = 255;
+        userPositionY = 255;
 
         mPointerX = 300.0f;
         mPointerY = 800.0f;
@@ -131,13 +127,13 @@ public class PositionView  extends TouchImageView{
 
     //TODO vorhandene bitmap nehmen! nicht immer die initiale drawn Map verwenden! weil desitnation icon überschrieben wird
     //TODO locations überschreiben!
-    public void updateUserPosition(double xPos, double yPos, double viewHeight, double viewWidth,Drawable drawable,String locationName){
+    public void updateUserPosition(double xPosLoc, double yPosLoc, double xPos, double yPos, double viewHeight, double viewWidth,Drawable drawable,String locationName){
 
         indoorViewHeight = viewHeight;
         indoorViewWidth = viewWidth;
 
-        userPositionXpx = xPos;
-        userPositionYpx = yPos;
+        xLocation = xPosLoc;
+        yLocation = yPosLoc;
 
         mPointerX = (float) ((xPos+xLocation)/locationWidth);
         //mPointerX = (float) (xPos/locationWidth * viewWidth);
@@ -165,10 +161,8 @@ public class PositionView  extends TouchImageView{
             */
                 //if(isWithinZoomedFrame(destinationPointer)){
             if(actualBitmap != null){
-                //TODO userposition auch einzeichnen wenn bei öschen auf die intial map zurückgestiegen wird
 
                 //To delete the old destination we step back to the initial map
-                actualBitmap = drawableToBitmap(initialDrawnMap);
                 Canvas c = new Canvas(actualBitmap);
 
 
@@ -212,8 +206,6 @@ public class PositionView  extends TouchImageView{
             actualBitmap = drawableToBitmap(initialDrawnMap);
             setImageBitmap(actualBitmap);
             bitmapRedrawNeeded = false;
-        }else{
-            //IDK
         }
         super.onDraw(canvas);
     }
@@ -223,8 +215,12 @@ public class PositionView  extends TouchImageView{
     private void drawUserPosition(Drawable drawable) {
 
         //TODO wenn die aktualle bitmap null is dann in die initial einzeichnen, ansonsten dazu zeichnen
-        //this.initialDrawnMap = drawable;
-        //actualBitmap = drawableToBitmap(drawable);
+        if (destinationPointer == null && initialDrawnMap != null) {
+            this.initialDrawnMap = drawable;
+            actualBitmap = drawableToBitmap(initialDrawnMap);
+        }
+
+
         Canvas c = new Canvas(actualBitmap);
 
         //returnt breite/höhe in pixel (tatsächlich angezeigt)
@@ -234,10 +230,11 @@ public class PositionView  extends TouchImageView{
         userPositionX = (mPointerX)*maxW;
         userPositionY = (mPointerY)*maxH;
 
-        c.drawCircle(userPositionX, userPositionY, mPointerRadius,positionPaint);
+        c  .drawCircle(userPositionX, userPositionY, mPointerRadius,positionPaint);
         //c.drawCircle((mPointerX/getWidth())*maxW, (mPointerY/getHeight())*maxH, mPointerRadius,positionPaint);
         Log.d("Bitmap", "Draw:" + (mPointerX)*maxW + "px, " + (mPointerY)*maxH+"px");
         setImageBitmap(actualBitmap);
+
     }
 
     public Bitmap drawableToBitmap (Drawable drawable) {
@@ -391,9 +388,8 @@ public class PositionView  extends TouchImageView{
     }
 
     public void scrollToUser() {
-        setScrollPosition((float)userPositionXpx/getWidth(),(float)userPositionYpx/getHeight());
-        Log.d("ScrollingToUser","X:"+userPositionXpx +" X/Width:"+ (float)userPositionXpx/getWidth() +
-                " Y:"+userPositionYpx + " Y/Height:"+ (float)userPositionYpx/getHeight());
+        setScrollPosition(mPointerX,mPointerY);
+        Log.d("ScrollingToUser","X:"+mPointerX +" Y: "+mPointerY);
     }
 
     public Point getDestinationPointer() {
