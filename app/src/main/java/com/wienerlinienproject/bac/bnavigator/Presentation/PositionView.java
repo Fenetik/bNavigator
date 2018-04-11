@@ -221,6 +221,7 @@ public class PositionView  extends TouchImageView{
         }
 
 
+        //shiiiiit
         Canvas c = new Canvas(actualBitmap);
 
         //returnt breite/höhe in pixel (tatsächlich angezeigt)
