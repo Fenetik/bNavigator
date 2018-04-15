@@ -162,12 +162,11 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
     public void setActiveLocation(Location newCurrent) {
         Log.d("currentLoc",  "called new currentlocation "+newCurrent.getIdentifier());
         this.activeLocation = newCurrent;
-        indoorManagerInit(activeLocation);
     }
 
     private void indoorManagerInit(final Location locationToRange) {
 
-        indoorManager = new IndoorLocationManagerBuilder(BeaconService.this,locationToRange,cloudCredentials).withDefaultScanner().build();
+        indoorManager = new IndoorLocationManagerBuilder(BeaconService.this,locationToRange,cloudCredentials).withPositionUpdateInterval(501).withDefaultScanner().build();
         indoorManager.setOnPositionUpdateListener(new OnPositionUpdateListener() {
 
             @Override
@@ -263,6 +262,8 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
             setRoomCount(0);
             setActiveLocation(kitchenLocation);
         }
+        indoorManagerInit(activeLocation);
+
     }
 
     public class BeaconBinder extends Binder {
