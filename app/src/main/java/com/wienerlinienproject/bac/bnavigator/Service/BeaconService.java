@@ -159,7 +159,6 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
     }
 
 
-
     public void setActiveLocation(Location newCurrent) {
         Log.d("currentLoc",  "called new currentlocation "+newCurrent.getName());
         this.activeLocation = newCurrent;
@@ -233,9 +232,9 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
         List<Double>  distanceKitchenBeacons = new ArrayList<>();
         for (Beacon beacon: collection) {
             Identifier namespace = beacon.getId1();
-            if(namespace.toString().startsWith("room")){
+            if(namespace.toString().startsWith("bbbb")){
                 distanceRoomBeacons.add(beacon.getDistance());
-            } else if(namespace.toString().startsWith("kitchen")){
+            } else if(namespace.toString().startsWith("aaaa")){
                 distanceKitchenBeacons.add(beacon.getDistance());
             }
         }

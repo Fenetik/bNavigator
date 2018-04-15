@@ -327,19 +327,21 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
 
                 String locationname = intent.getStringExtra(BROADCAST_getLocation);
-                if (!allLocations.isEmpty()){
-                    for (LocationObject current : allLocations){
-                        if (!current.getName().equals(locationname)){
-                            LocationObject newlocation = new LocationObject(locationname);
-                            allLocations.add(newlocation);
+                if(locationname!=null && !locationname.isEmpty()) {
+                    if (!allLocations.isEmpty()) {
+                        for (LocationObject current : allLocations) {
+                            if (!current.getName().equals(locationname)) {
+                                LocationObject newlocation = new LocationObject(locationname);
+                                allLocations.add(newlocation);
+                            }
                         }
+                    } else {
+                        LocationObject newlocation = new LocationObject(locationname);
+                        allLocations.add(newlocation);
                     }
-                } else {
-                    LocationObject newlocation = new LocationObject(locationname);
-                    allLocations.add(newlocation);
+                    Log.d("MainActivity_Location", "indoorview done");
+                    defineLocations();
                 }
-                Log.d("MainActivity_Location", "indoorview done" );
-                defineLocations();
             }
         }
     }
