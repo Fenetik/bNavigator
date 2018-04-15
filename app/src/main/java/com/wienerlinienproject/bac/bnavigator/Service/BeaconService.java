@@ -49,9 +49,6 @@ import kotlin.jvm.functions.Function1;
 
 public class BeaconService extends Service implements BeaconConsumer,RangeNotifier{
 
-
-    private  Map<String, List<String>> PLACES_BY_BEACONS;
-    private String destination = "kitchen-2s1";
     private IndoorCloudManager cloudManager;
     private ScanningIndoorLocationManager indoorManager;
     private final CloudCredentials cloudCredentials = new EstimoteCloudCredentials("natasa-nikic-info-s-your-o-e6g",
@@ -72,20 +69,22 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
      *
      */
 
+    private Location activeLocation;
+    private Location kitchenLocation;
+    private Location roomLocation;
 
+    public void setRoomCount(int roomCount) {
+        this.roomCount = roomCount;
+    }
+
+    public void setKitchenCount(int kitchenCount) {
+        this.kitchenCount = kitchenCount;
+    }
+
+    private int roomCount = 0;
+    private int kitchenCount = 0;
 
     private LocationPosition position;
-    private Location activeLocation;
-    private Location locationFlur;
-    private Location locationKitchen;
-   // private BeaconManager beaconManager;
-    //private BeaconRegion region;
-    private int tempcount = 1;
-
-
-    private List<LocationObject> allLocations;
-    private LocationObject currentLocation;
-    private LocationMap locationMap;
 
     private final IBinder mBinder = new BeaconBinder();
 
@@ -99,12 +98,8 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
     public void onCreate() {
         super.onCreate();
 
-        //TODO alle locations laden
-       // beaconManager = new BeaconManager(getApplicationContext());
-        //region = new BeaconRegion("ranged region", null, null, null);
 
         cloudManager = new IndoorCloudManagerFactory().create(this,cloudCredentials);
-        allLocations = new ArrayList<>();
 
 
         altBeaconManager = BeaconManager.getInstanceForApplication(this.getApplicationContext());
@@ -113,56 +108,18 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
         altBeaconManager.bind(this);
         Log.d("altbeaconRanging","Manager bound");
 
-        /*cloudManager.getAllLocations(new CloudCallback<List<Location>>() {
-            @Override
-            public void success(List<Location> locations) {
-
-                for (final Location location:locations) {
-
-                    BeaconService.this.activeLocation = location;
-                    LocationObject newLocationObj = new LocationObject(location.getIdentifier());
-                    newLocationObj.setCloudLocation(location);
-                    allLocations.add(newLocationObj);
-
-                    Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_getLocation);
-                    broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, "");
-                    sendBroadcast(broadcast);
-
-                    Log.d("cloudService","Got location: " + location.getIdentifier());
-                }
-
-                defineLocations();
-            }
-
-            @Override
-            public void failure(EstimoteCloudException serverException) {
-                Log.d("cloudService","Getting Location from Cloud failed: "+ serverException.toString());
-                Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM,
-                "Getting Location from Cloud failed");
-                sendBroadcast(broadcast);
-            }
-        });*/
-
-
         cloudManager.getLocation("room-84l", new CloudCallback<Location>() {
             @Override
             public void success(final Location location) {
 
                 BeaconService.this.activeLocation = location;
-                BeaconService.this.locationKitchen = location;
+                BeaconService.this.roomLocation = location;
 
                 Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_getLocation);
                 broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, "");
                 sendBroadcast(broadcast);
 
-                LocationObject newLocationObj = new LocationObject(location.getIdentifier());
-                newLocationObj.setCloudLocation(location);
-                allLocations.add(newLocationObj);
-
-                defineLocations();
                 Log.d("cloudService", "got location");
-                setCurrentLocation(newLocationObj);
             }
 
             @Override
@@ -180,19 +137,13 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
             public void success(final Location location) {
 
                 BeaconService.this.activeLocation = location;
-                BeaconService.this.locationKitchen = location;
+                BeaconService.this.kitchenLocation = location;
 
                 Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_getLocation);
                 broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, "");
                 sendBroadcast(broadcast);
 
-                LocationObject newLocationObj = new LocationObject(location.getIdentifier());
-                newLocationObj.setCloudLocation(location);
-                allLocations.add(newLocationObj);
-                defineLocations();
-
                 Log.d("cloudService", "got location");
-                setCurrentLocation(newLocationObj);
             }
 
             @Override
@@ -205,117 +156,13 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
             }
         });
 
-
-        /*beaconManager.setRangingListener(new BeaconManager.BeaconRangingListener() {
-            @Override
-            public void onBeaconsDiscovered(BeaconRegion beaconRegion, List<com.estimote.coresdk.recognition.packets.Beacon> beacons) {
-                Log.d("onBeaconDiscovered", "vorm IF");
-                if (!beacons.isEmpty()) {
-                    com.estimote.coresdk.recognition.packets.Beacon nearestBeacon = beacons.get(0);
-                    List<String> places = placesNearBeacon(nearestBeacon);
-                    String output = "";
-                    if(!places.isEmpty()){
-                        if(!places.get(0).equals(currentLocation.getName())) {
-                            if(indoorManager != null)
-                                indoorManager.stopPositioning();
-                            setCurrentLocation(locationMap.getLocationByName(places.get(0)));
-                        }
-                        //wenn nur 1 place in der Liste ist
-                        if(places.size() == 1){
-                            output += places.get(0) + " (Nothing to navigate.)";
-                            Log.d("RangingListener", places.get(0));
-                        }else{
-                            output += places.get(0) + " "+navigate(nearestBeacon, destination);
-                            Log.d("RangingListener", places.get(0));
-                        }
-                    }else {
-                        output+= "No new places";
-                        Log.d("RangingListener", "No new places");
-                    }
-
-                    /*Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                    broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, output);
-                    sendBroadcast(broadcast);
-                }else{
-                    //dafuq
-                }
-            }
-
-        });*/
-
     }
 
-    private void defineLocations(){
-        Log.d("defineLocations","called");
-        locationMap = new LocationMap();
-        Map<String, List<String>> placesByBeacons = new HashMap<>();
-        for (LocationObject location : allLocations) {
-            HashMap<Door, LocationObject> neighboursList;
-            Door bottomDoor = null;
-            switch (location.getName()) {
-                case "kitchen-2s1":
-                    Log.d("defineLocations",location.getName());
-                    location.setHeight(5.0);
-                    location.setWidth(3.5);
-                    location.setStartPointX(2.0);
-                    location.setStartPointY(0.75);
-                    bottomDoor = new Door("bottom", 2.5, 5.5, 3.0, 5.5);
-                    neighboursList = new HashMap<>();
-                    neighboursList.put(bottomDoor, new LocationObject("room-84l"));
-                    location.setNeighboursList(neighboursList);
-                    placesByBeacons.put("8e43145d98d7344f38371cfc76f37230", new ArrayList<String>() {{
-                        add("kitchen-2s1");
-                    }});
-                    placesByBeacons.put("41e1ac7c775ac9ab3c0f5f556ed8de07", new ArrayList<String>() {{
-                        add("kitchen-2s1");
-                    }});
-                    placesByBeacons.put("93850bb0152d1f4ed94fc09fc3f6fd06", new ArrayList<String>() {{
-                        add("kitchen-2s1");
-                    }});
-                    placesByBeacons.put("13b3a6c5dd201ca168b4ed4c94a0492f", new ArrayList<String>() {{
-                        add("kitchen-2s1");
-                        add("room-84l");
-                    }});
-                    locationMap.addLocation("kitchen-2s1", location);
-                    break;
-                case "room-84l":
-                    Log.d("defineLocations",location.getName());
-                    location.setHeight(6.0);
-                    location.setWidth(5.0);
-                    location.setStartPointX(0.5);
-                    location.setStartPointY(7.8);
-                    Door topDoor = new Door("top", 2.5, 5.5, 3.0, 5.5);
-                    neighboursList = new HashMap<>();
-                    neighboursList.put(topDoor, new LocationObject("kitchen-2s1"));
-                    location.setNeighboursList(neighboursList);
-                    placesByBeacons.put("d2e5a99f0a6157b4e89bb709977d6716", new ArrayList<String>() {{
-                        add("room-84l");
-                    }});
-                    placesByBeacons.put("b8d5a0caabab6dd856073a3a37d99526", new ArrayList<String>() {{
-                        add("room-84l");
-                    }});
-                    placesByBeacons.put("440bb6986feb036ae8a78eeca764123c", new ArrayList<String>() {{
-                        add("room-84l");
-                    }});
-                    placesByBeacons.put("e0dfa3041770efc1ddeb00687bac2c39", new ArrayList<String>() {{
-                        add("room-84l");
-                        add("kitchen-2s1");
-                    }});
-                    locationMap.addLocation("room-84l", location);
-                    break;
-            }
 
 
-        }
-        Log.d("defineLocation", "defineLocations done");
-        PLACES_BY_BEACONS = Collections.unmodifiableMap(placesByBeacons);
-    }
-
-    public void setCurrentLocation(LocationObject newCurrent) {
+    public void setActiveLocation(Location newCurrent) {
         Log.d("currentLoc",  "called new currentlocation "+newCurrent.getName());
-        this.currentLocation = newCurrent;
-        this.activeLocation = currentLocation.getCloudLocation();
-        locationMap.setActiveLocation(newCurrent.getName());
+        this.activeLocation = newCurrent;
         indoorManagerInit(activeLocation);
     }
 
@@ -327,29 +174,12 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
             @Override
             public void onPositionUpdate(LocationPosition position) {
 
-                Log.d("locationManager", "Got position: " + position.getX() + ", " + position.getY()+" Location:"+locationToRange.getIdentifier() +
-                " Count:" + tempcount);
+                Log.d("locationManager", "Got position: " + position.getX() + ", " + position.getY()+" Location:"+locationToRange.getIdentifier());
                 BeaconService.this.position = position;
                 Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, currentLocation.getStartPointX()+","+currentLocation.getStartPointY()+","+position.getX() + "," +
+                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, position.getX() + "," +
                         position.getY()+","+locationToRange.getIdentifier());
                 sendBroadcast(broadcast);
-
-
-                BeaconService.this.setCount(BeaconService.this.tempcount+1);
-
-               /* if(BeaconService.this.tempcount > 4){
-                    BeaconService.this.setCount(1);
-                    indoorManager.stopPositioning();
-                    if(locationToRange.getName().equals(locationKitchen.getName())){
-                        Log.d("Locationchange","Changing Location to Flur");
-                        indoorManagerInit(locationFlur);
-                    }else{
-                        Log.d("Locationchange","Changing Location to Kitchen");
-                        indoorManagerInit(locationKitchen);
-                    }
-
-                } */
             }
             @Override
             public void onPositionOutsideLocation() {
@@ -363,13 +193,7 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
 
     private void run(){
         Log.d("BeaconService", "run");
-//        beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
-//            @Override public void onServiceReady() {
-//                beaconManager.startRanging(region);
-//                beaconManager.startLocationDiscovery();
-//                Log.d("ranging","started");
-//            }
-//        });
+
     }
 
     @Override
@@ -380,29 +204,12 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
 
     @Override
     public boolean onUnbind(Intent intent) {
-       // beaconManager.stopRanging(region);
-        //beaconManager.disconnect();
         indoorManager.stopPositioning();
         altBeaconManager.unbind(this);
         //Service wird sicher beendet sobald sich jemand unbindet
         this.stopSelf();
 
         return super.onUnbind(intent);
-    }
-
-    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-        List<Map.Entry<K, V>> list = new LinkedList<Map.Entry<K, V>>(map.entrySet());
-        Collections.sort( list, new Comparator<Map.Entry<K, V>>() {
-            public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
-                return (o1.getValue()).compareTo( o2.getValue() );
-            }
-        });
-
-        Map<K, V> result = new LinkedHashMap<K, V>();
-        for (Map.Entry<K, V> entry : list) {
-            result.put(entry.getKey(), entry.getValue());
-        }
-        return result;
     }
 
     @Override
@@ -422,49 +229,61 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
     @Override
     public void didRangeBeaconsInRegion(Collection<Beacon> collection, Region region) {
         Log.d("altbeaconRangin","didRangeBeaconsInReagion " + collection.size());
+        List<Double> distanceRoomBeacons = new ArrayList<>();
+        List<Double>  distanceKitchenBeacons = new ArrayList<>();
         for (Beacon beacon: collection) {
-            //Log.d("altBeaconRanging",beacon.getId1()+" dist:" + beacon.getDistance());
-            //if (beacon.getServiceUuid() == 0xfeaa && beacon.getBeaconTypeCode() == 0x00) {
-                // This is a Eddystone-UID frame
-
-                Identifier namespaceId = beacon.getId1();
-                Identifier instanceId = beacon.getId2();
-
-
-                //"namespace id: " + namespaceId +
-                final String s = "ID: " + instanceId +
-                        ", Dist: " + String.format("%.5g",beacon.getDistance()) + " meters \n";
-
-                Log.d("altBeaconRanging",s);
-            //}
+            Identifier namespace = beacon.getId1();
+            if(namespace.toString().startsWith("room")){
+                distanceRoomBeacons.add(beacon.getDistance());
+            } else if(namespace.toString().startsWith("kitchen")){
+                distanceKitchenBeacons.add(beacon.getDistance());
+            }
+        }
+        Collections.sort(distanceRoomBeacons);
+        Collections.sort(distanceKitchenBeacons);
+        boolean kitchenIsCloser = compareLists(distanceRoomBeacons, distanceKitchenBeacons);
+        if(kitchenIsCloser){
+            setKitchenCount(kitchenCount+1);
+        } else {
+            setRoomCount(roomCount+1);
+        }
+        if(roomCount > 3){
+            Log.d("Locationchange","Changing Location to room");
+            setRoomCount(0);
+            setActiveLocation(roomLocation);
+        } else if(kitchenCount > 3){
+            Log.d("Locationchange","Changing Location to kitchen");
+            setKitchenCount(0);
+            setActiveLocation(kitchenLocation);
         }
     }
 
-   /* private List<String> placesNearBeacon(com.estimote.coresdk.recognition.packets.Beacon beacon) {
-        if(PLACES_BY_BEACONS!= null){
-            String beaconKey = beacon.getUniqueKey();
-            if (PLACES_BY_BEACONS.containsKey(beaconKey)) {
-                return PLACES_BY_BEACONS.get(beaconKey);
+
+    // returns true if more beacons of the kitchen are closer to the phone
+    // returns false if more beacons of the room are closer to the phone
+    // TODO wsl anders schreiben - nachdenken...
+    private boolean compareLists(List<Double> roomBeacons, List<Double> kitchenBeacons){
+        int rAmountBeaconsCloseBy = 0;
+        int kAmountBeaconsCloseBy = 0;
+        // assumption that both rooms have same amount of beacons - doesnt matter what size is being used
+        for (int i = 0; i < roomBeacons.size(); i++){
+            if (roomBeacons.get(i) > kitchenBeacons.get(i)){
+                kAmountBeaconsCloseBy++;
+            } else {
+                rAmountBeaconsCloseBy++;
             }
         }
-        return Collections.emptyList();
-    }*/
-
-    /*private String navigate(com.estimote.coresdk.recognition.packets.Beacon beacon, String destination){
-
-        if (destination.equals(placesNearBeacon(beacon).get(0)))
-            return "Arrived at destination";
-        return "Go to: "+placesNearBeacon(beacon).get(1);
-    }*/
+        if(kAmountBeaconsCloseBy > rAmountBeaconsCloseBy){
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     public class BeaconBinder extends Binder {
 
        public BeaconService getService(){
             return BeaconService.this;
         }
-    }
-
-    public void setCount(int count) {
-        this.tempcount = count;
     }
 }

@@ -18,6 +18,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.wienerlinienproject.bac.bnavigator.Data.LocationObject;
+
 
 //TODO hier LocationObjekte laden oder in der Main Activity bzw die locationMap initialisieren?
 // => in der Main activity und dem view übergeben
@@ -128,13 +130,13 @@ public class PositionView  extends TouchImageView{
 
     //TODO vorhandene bitmap nehmen! nicht immer die initiale drawn Map verwenden! weil desitnation icon überschrieben wird
     //TODO locations überschreiben!
-    public void updateUserPosition(double xPosLoc, double yPosLoc, double xPos, double yPos, double viewHeight, double viewWidth,Drawable drawable,String locationName){
+    public void updateUserPosition(double xPos, double yPos, double viewHeight, double viewWidth,Drawable drawable,LocationObject currentLocation){
 
         indoorViewHeight = viewHeight;
         indoorViewWidth = viewWidth;
 
-        xLocation = xPosLoc;
-        yLocation = yPosLoc;
+        xLocation = currentLocation.getStartPointX();
+        yLocation = currentLocation.getStartPointY();
 
         mPointerX = (float) ((xPos+xLocation)/locationWidth);
         //mPointerX = (float) (xPos/locationWidth * viewWidth);
@@ -144,7 +146,7 @@ public class PositionView  extends TouchImageView{
         // mPointerY = (float) ((5.5-yPos)/locationHeight * viewHeight);
 
 
-        Log.d("updatePos", locationName+ ": Pos: " + xPos +" "+ yPos + "Pointer:" + mPointerX +" "+ mPointerY);
+        Log.d("updatePos", currentLocation.getName()+ ": Pos: " + xPos +" "+ yPos + "Pointer:" + mPointerX +" "+ mPointerY);
         drawUserPosition(drawable);
 
     }
