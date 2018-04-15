@@ -116,7 +116,7 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
                 BeaconService.this.roomLocation = location;
 
                 Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_getLocation);
-                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, "");
+                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, location.getIdentifier());
                 sendBroadcast(broadcast);
 
                 Log.d("cloudService", "got location");
@@ -140,7 +140,7 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
                 BeaconService.this.kitchenLocation = location;
 
                 Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_getLocation);
-                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, "");
+                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, location.getIdentifier());
                 sendBroadcast(broadcast);
 
                 Log.d("cloudService", "got location");
@@ -160,7 +160,7 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
 
 
     public void setActiveLocation(Location newCurrent) {
-        Log.d("currentLoc",  "called new currentlocation "+newCurrent.getName());
+        Log.d("currentLoc",  "called new currentlocation "+newCurrent.getIdentifier());
         this.activeLocation = newCurrent;
         indoorManagerInit(activeLocation);
     }
@@ -228,54 +228,40 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
     @Override
     public void didRangeBeaconsInRegion(Collection<Beacon> collection, Region region) {
         Log.d("altbeaconRangin","didRangeBeaconsInReagion " + collection.size());
-        List<Double> distanceRoomBeacons = new ArrayList<>();
-        List<Double>  distanceKitchenBeacons = new ArrayList<>();
+        double distanceRoomBeacons = 0.0;
+        double  distanceKitchenBeacons = 0.0;
         for (Beacon beacon: collection) {
             Identifier namespace = beacon.getId1();
             if(namespace.toString().startsWith("bbbb")){
-                distanceRoomBeacons.add(beacon.getDistance());
-            } else if(namespace.toString().startsWith("aaaa")){
-                distanceKitchenBeacons.add(beacon.getDistance());
+                distanceRoomBeacons += beacon.getDistance();
+            }
+            if(namespace.toString().startsWith("aaaa")){
+                distanceKitchenBeacons+=beacon.getDistance();
             }
         }
-        Collections.sort(distanceRoomBeacons);
-        Collections.sort(distanceKitchenBeacons);
-        boolean kitchenIsCloser = compareLists(distanceRoomBeacons, distanceKitchenBeacons);
-        if(kitchenIsCloser){
-            setKitchenCount(kitchenCount+1);
+        if (distanceKitchenBeacons > 0.0){
+            if(distanceRoomBeacons > 0.0){
+                if(distanceKitchenBeacons < distanceRoomBeacons){
+                    setKitchenCount(kitchenCount+1);
+                } else {
+                    setRoomCount(roomCount+1);
+                }
+            } else {
+                setKitchenCount(kitchenCount+1);
+            }
         } else {
             setRoomCount(roomCount+1);
         }
         if(roomCount > 3){
             Log.d("Locationchange","Changing Location to room");
             setRoomCount(0);
+            setKitchenCount(0);
             setActiveLocation(roomLocation);
         } else if(kitchenCount > 3){
             Log.d("Locationchange","Changing Location to kitchen");
             setKitchenCount(0);
+            setRoomCount(0);
             setActiveLocation(kitchenLocation);
-        }
-    }
-
-
-    // returns true if more beacons of the kitchen are closer to the phone
-    // returns false if more beacons of the room are closer to the phone
-    // TODO wsl anders schreiben - nachdenken...
-    private boolean compareLists(List<Double> roomBeacons, List<Double> kitchenBeacons){
-        int rAmountBeaconsCloseBy = 0;
-        int kAmountBeaconsCloseBy = 0;
-        // assumption that both rooms have same amount of beacons - doesnt matter what size is being used
-        for (int i = 0; i < roomBeacons.size(); i++){
-            if (roomBeacons.get(i) > kitchenBeacons.get(i)){
-                kAmountBeaconsCloseBy++;
-            } else {
-                rAmountBeaconsCloseBy++;
-            }
-        }
-        if(kAmountBeaconsCloseBy > rAmountBeaconsCloseBy){
-            return true;
-        } else {
-            return false;
         }
     }
 

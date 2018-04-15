@@ -89,6 +89,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         super.onCreate(savedInstanceState);
 
+        defineLocations();
+
         setContentView(R.layout.activity_main);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -307,10 +309,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 Log.d("MainActivity_Position", "got " + intent.getStringExtra(BROADCAST_PARAM));
                 String positionStr = intent.getStringExtra(BROADCAST_PARAM);
                 List<String> positionList = Arrays.asList(positionStr.split(","));
-                double xPos = Double.valueOf(positionList.get(2));
-                double yPos = Double.valueOf(positionList.get(3));
-                String locationName = String.valueOf(positionList.get(4));
-                currentLocation = getLocation(locationName);
+                double xPos = Double.valueOf(positionList.get(0));
+                double yPos = Double.valueOf(positionList.get(1));
+                String locationName = String.valueOf(positionList.get(2));
+                currentLocation = locationMap.getLocationByName(locationName);
 
                 //positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
                 //positionView.invalidate();
@@ -326,21 +328,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
 
-                String locationname = intent.getStringExtra(BROADCAST_getLocation);
+                String locationname = intent.getStringExtra(BROADCAST_PARAM);
                 if(locationname!=null && !locationname.isEmpty()) {
-                    if (!allLocations.isEmpty()) {
-                        for (LocationObject current : allLocations) {
-                            if (!current.getName().equals(locationname)) {
-                                LocationObject newlocation = new LocationObject(locationname);
-                                allLocations.add(newlocation);
-                            }
-                        }
-                    } else {
-                        LocationObject newlocation = new LocationObject(locationname);
-                        allLocations.add(newlocation);
-                    }
+                    currentLocation = locationMap.getLocationByName(locationname);
                     Log.d("MainActivity_Location", "indoorview done");
-                    defineLocations();
+
                 }
             }
         }
@@ -359,36 +351,28 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private void defineLocations(){
         Log.d("defineLocations","called");
         locationMap = new LocationMap();
-        for (LocationObject location : allLocations) {
-            HashMap<Door, LocationObject> neighboursList;
-            Door bottomDoor = null;
-            switch (location.getName()) {
-                case "kitchen-2s1":
-                    Log.d("defineLocations",location.getName());
-                    location.setHeight(5.0);
-                    location.setWidth(3.5);
-                    location.setStartPointX(2.0);
-                    location.setStartPointY(0.75);
-                    bottomDoor = new Door("bottom", 0.5, 5.0, 1.0, 5.0);
-                    neighboursList = new HashMap<>();
-                    neighboursList.put(bottomDoor, new LocationObject("room-84l"));
-                    location.setNeighboursList(neighboursList);
-                    locationMap.addLocation("kitchen-2s1", location);
-                    break;
-                case "room-84l":
-                    Log.d("defineLocations",location.getName());
-                    location.setHeight(6.0);
-                    location.setWidth(5.0);
-                    location.setStartPointX(0.5);
-                    location.setStartPointY(7.8);
-                    Door topDoor = new Door("top", 2.5, 5.5, 3.0, 5.5);
-                    neighboursList = new HashMap<>();
-                    neighboursList.put(topDoor, new LocationObject("kitchen-2s1"));
-                    location.setNeighboursList(neighboursList);
-                    locationMap.addLocation("room-84l", location);
-                    break;
-            }
-        }
+        HashMap<Door, LocationObject> neighboursList;
+        LocationObject kitchen = new LocationObject("kitchen-2s1");
+        kitchen.setHeight(5.0);
+        kitchen.setWidth(3.5);
+        kitchen.setStartPointX(2.0);
+        kitchen.setStartPointY(0.75);
+        Door bottomDoor = new Door("bottom", 0.5, 5.0, 1.0, 5.0);
+        neighboursList = new HashMap<>();
+        neighboursList.put(bottomDoor, new LocationObject("room-84l"));
+        kitchen.setNeighboursList(neighboursList);
+        locationMap.addLocation("kitchen-2s1", kitchen);
+
+        LocationObject room = new LocationObject("room-84l");
+        room.setHeight(6.0);
+        room.setWidth(5.0);
+        room.setStartPointX(0.5);
+        room.setStartPointY(7.8);
+        Door topDoor = new Door("top", 2.5, 5.5, 3.0, 5.5);
+        neighboursList = new HashMap<>();
+        neighboursList.put(topDoor, kitchen);
+        room.setNeighboursList(neighboursList);
+        locationMap.addLocation("room-84l", room);
     }
 
 }
