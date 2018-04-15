@@ -11,7 +11,6 @@ import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -194,13 +193,10 @@ public class PositionView  extends TouchImageView{
     private void drawUserPosition(Drawable drawable) {
 
         //TODO wenn die aktualle bitmap null is dann in die initial einzeichnen, ansonsten dazu zeichnen
-        //if (destinationPointer == null && initialDrawnMap != null && userPositionX == 0 && userPositionY == 0 ) {
-            this.initialDrawnMap = drawable;
-            actualBitmap = drawableToBitmap(initialDrawnMap);
-        //}
+        this.initialDrawnMap = drawable;
+        actualBitmap = drawableToBitmap(initialDrawnMap);
 
 
-        //shiiiiit
         Canvas c = new Canvas(actualBitmap);
 
         //returnt breite/höhe in pixel (tatsächlich angezeigt)

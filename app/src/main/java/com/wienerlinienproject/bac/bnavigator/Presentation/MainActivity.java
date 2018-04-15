@@ -323,7 +323,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
                 indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
                 beaconLog.append("x: " + positionView.getmPointerX() + " y: " + positionView.getmPointerY() + "\n");
-                //beaconLog.append("x: " + positionView.getmPointerX() + " y: " + imageView.getmPointerY() + "\n");
 
 
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
@@ -336,16 +335,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 }
             }
         }
-    }
-
-    private LocationObject getLocation(String name){
-        for (LocationObject current : allLocations){
-            if(name.equals(current.getName())){
-                return current;
-            }
-        }
-        //rip
-        return null;
     }
 
     private void defineLocations(){

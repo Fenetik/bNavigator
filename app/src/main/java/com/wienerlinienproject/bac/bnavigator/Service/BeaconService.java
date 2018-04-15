@@ -18,9 +18,6 @@ import com.estimote.indoorsdk_module.cloud.IndoorCloudManagerFactory;
 import com.estimote.indoorsdk_module.cloud.Location;
 import com.estimote.indoorsdk_module.cloud.LocationPosition;
 import com.estimote.internal_plugins_api.cloud.CloudCredentials;
-import com.wienerlinienproject.bac.bnavigator.Data.Door;
-import com.wienerlinienproject.bac.bnavigator.Data.LocationMap;
-import com.wienerlinienproject.bac.bnavigator.Data.LocationObject;
 import com.wienerlinienproject.bac.bnavigator.Presentation.MainActivity;
 
 import org.altbeacon.beacon.Beacon;
@@ -31,21 +28,7 @@ import org.altbeacon.beacon.Identifier;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
-
-//TODO current location isnt changing
 
 public class BeaconService extends Service implements BeaconConsumer,RangeNotifier{
 
@@ -85,6 +68,7 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
     private int kitchenCount = 0;
 
     private LocationPosition position;
+    private Region region;
 
     private final IBinder mBinder = new BeaconBinder();
 
@@ -125,11 +109,8 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
             @Override
             public void failure(EstimoteCloudException serverException) {
                 Log.d("cloudService","Getting Location from Cloud failed: "+ serverException.toString()+"room-84l");
-               /* Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM,
-                        "Getting Location from Cloud failed");
-                sendBroadcast(broadcast);*/
-                }
+
+            }
         });
 
         cloudManager.getLocation("kitchen-2s1", new CloudCallback<Location>() {
@@ -148,11 +129,8 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
 
             @Override
             public void failure(EstimoteCloudException serverException) {
-                Log.d("cloudService","Getting Location from Cloud failed: "+ serverException.toString()+"room-84l");
-               /* Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
-                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM,
-                        "Getting Location from Cloud failed");
-                sendBroadcast(broadcast);*/
+                Log.d("cloudService","Getting Location from Cloud failed: "+ serverException.toString()+"kitchen-2s1");
+
             }
         });
 
@@ -162,6 +140,7 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
     public void setActiveLocation(Location newCurrent) {
         Log.d("currentLoc",  "called new currentlocation "+newCurrent.getIdentifier());
         this.activeLocation = newCurrent;
+        indoorManagerInit(activeLocation);
     }
 
     private void indoorManagerInit(final Location locationToRange) {
@@ -203,6 +182,11 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
     @Override
     public boolean onUnbind(Intent intent) {
         indoorManager.stopPositioning();
+        try {
+            altBeaconManager.stopRangingBeaconsInRegion(region);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         altBeaconManager.unbind(this);
         //Service wird sicher beendet sobald sich jemand unbindet
         this.stopSelf();
@@ -212,7 +196,7 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
 
     @Override
     public void onBeaconServiceConnect() {
-        Region region = new Region("all-beacons-region", null, null, null);
+        region = new Region("all-beacons-region", null, null, null);
         try {
             altBeaconManager.startRangingBeaconsInRegion(region);
             Log.d("altbeaconRanging","Starting Ranging");
@@ -226,44 +210,34 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
 
     @Override
     public void didRangeBeaconsInRegion(Collection<Beacon> collection, Region region) {
-        Log.d("altbeaconRangin","didRangeBeaconsInReagion " + collection.size());
-        double distanceRoomBeacons = 0.0;
-        double  distanceKitchenBeacons = 0.0;
-        for (Beacon beacon: collection) {
-            Identifier namespace = beacon.getId1();
-            if(namespace.toString().startsWith("bbbb")){
-                distanceRoomBeacons += beacon.getDistance();
-            }
-            if(namespace.toString().startsWith("aaaa")){
-                distanceKitchenBeacons+=beacon.getDistance();
-            }
+        Log.d("altbeaconRangin", "didRangeBeaconsInReagion " + collection.size());
+        Beacon nearestBeacon = null;
+        for (Beacon beacon : collection) {
+            if (nearestBeacon == null)
+                nearestBeacon = beacon;
+            if (beacon.getDistance() < nearestBeacon.getDistance())
+                nearestBeacon = beacon;
         }
-        if (distanceKitchenBeacons > 0.0){
-            if(distanceRoomBeacons > 0.0){
-                if(distanceKitchenBeacons < distanceRoomBeacons){
-                    setKitchenCount(kitchenCount+1);
-                } else {
-                    setRoomCount(roomCount+1);
-                }
-            } else {
-                setKitchenCount(kitchenCount+1);
-            }
-        } else {
-            setRoomCount(roomCount+1);
+        Identifier namespace = nearestBeacon.getId1();
+        if (namespace.toString().startsWith("bbbb")) {
+            setRoomCount(roomCount + 1);
+        }
+        if (namespace.toString().startsWith("aaaa")) {
+            setKitchenCount(kitchenCount + 1);
         }
         if(roomCount > 3){
-            Log.d("Locationchange","Changing Location to room");
             setRoomCount(0);
             setKitchenCount(0);
-            setActiveLocation(roomLocation);
+            Log.d("altbeaconRangin", "roomCount > 3");
+            if(!roomLocation.getIdentifier().equals(activeLocation.getIdentifier()))
+                setActiveLocation(roomLocation);
         } else if(kitchenCount > 3){
-            Log.d("Locationchange","Changing Location to kitchen");
             setKitchenCount(0);
             setRoomCount(0);
-            setActiveLocation(kitchenLocation);
+            Log.d("altbeaconRangin", "kitchenCount > 3");
+            if(!kitchenLocation.getIdentifier().equals(activeLocation.getIdentifier()))
+                setActiveLocation(kitchenLocation);
         }
-        indoorManagerInit(activeLocation);
-
     }
 
     public class BeaconBinder extends Binder {
