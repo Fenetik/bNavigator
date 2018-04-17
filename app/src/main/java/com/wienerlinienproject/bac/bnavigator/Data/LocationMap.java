@@ -1,5 +1,7 @@
 package com.wienerlinienproject.bac.bnavigator.Data;
 
+import android.location.Location;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,7 +10,7 @@ import java.util.Map;
 public class LocationMap {
 
     //die Location in der sich der User gerade befindet
-    private String activeLocation;
+    private LocationObject activeLocation;
     //Key should be the locationName stored in the Cloud
     private Map<String,LocationObject> locations;
 
@@ -20,11 +22,11 @@ public class LocationMap {
 
         locations.put(name, locationObject);
     }
-    public String getActiveLocation() {
+    public LocationObject getActiveLocation() {
         return activeLocation;
     }
 
-    public void setActiveLocation(String activeLocation) {
+    public void setActiveLocation(LocationObject activeLocation) {
         this.activeLocation = activeLocation;
     }
 

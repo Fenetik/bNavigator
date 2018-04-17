@@ -34,16 +34,11 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
 
 import com.estimote.indoorsdk_module.cloud.LocationPosition;
 import com.estimote.indoorsdk_module.view.IndoorLocationView;
-import com.wienerlinienproject.bac.bnavigator.Data.Door;
-import com.wienerlinienproject.bac.bnavigator.Data.LocationMap;
-import com.wienerlinienproject.bac.bnavigator.Data.LocationObject;
 import com.wienerlinienproject.bac.bnavigator.R;
 import com.wienerlinienproject.bac.bnavigator.Service.BeaconService;
 //import com.wienerlinienproject.bac.bnavigator.Service.CloudService;
@@ -59,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     boolean beaconServiceIsBound = false;
     private TextView beaconLog;
     private PositionView positionView;
-   // private TouchImageView imageView;
+    // private TouchImageView imageView;
     private IndoorLocationView indoorView;
     private boolean isFABOpen =false;
 
@@ -67,10 +62,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private FloatingActionButton fab1;
     private FloatingActionButton fab2;
     private FloatingActionButton fabMyLocation;
+    private FloatingActionButton fabNavigateMe;
 
-    private List<LocationObject> allLocations;
-    private LocationObject currentLocation;
-    private LocationMap locationMap;
 
     private Toolbar myToolbar;
 
@@ -85,11 +78,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         // Framelyout wäre gut für karte im hintergrund zeichen
 
-        allLocations = new ArrayList<>();
-
         super.onCreate(savedInstanceState);
-
-        defineLocations();
 
         setContentView(R.layout.activity_main);
 
@@ -135,6 +124,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         fabMenu = (FloatingActionButton) findViewById(R.id.fabMenu);
         fab1 = (FloatingActionButton) findViewById(R.id.fabFloor1);
         fab2 = (FloatingActionButton) findViewById(R.id.fabFloor2);
+        fabNavigateMe = (FloatingActionButton) findViewById(R.id.fabNavigateMe);
+
+
         fabMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -249,6 +241,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 positionView.onDeletePostionClicked();
                 myToolbar.getMenu().findItem(R.id.action_deleteMark).setVisible(false);
                 myToolbar.getMenu().findItem(R.id.action_shareMark).setVisible(false);
+                fabNavigateMe.setVisibility(View.INVISIBLE);
                 return true;
 
             case R.id.action_shareMark:
@@ -290,6 +283,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public void onDestinationSet() {
         myToolbar.getMenu().findItem(R.id.action_deleteMark).setVisible(true);
         myToolbar.getMenu().findItem(R.id.action_shareMark).setVisible(true);
+        fabNavigateMe.setVisibility(View.VISIBLE);
 
         positionView.resetListener();
     }
@@ -309,59 +303,29 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 Log.d("MainActivity_Position", "got " + intent.getStringExtra(BROADCAST_PARAM));
                 String positionStr = intent.getStringExtra(BROADCAST_PARAM);
                 List<String> positionList = Arrays.asList(positionStr.split(","));
-                double xPos = Double.valueOf(positionList.get(0));
-                double yPos = Double.valueOf(positionList.get(1));
-                String locationName = String.valueOf(positionList.get(2));
-                currentLocation = locationMap.getLocationByName(locationName);
-
+                double xPosLoc = Double.valueOf(positionList.get(0));
+                double yPosLoc = Double.valueOf(positionList.get(1));
+                double xPos = Double.valueOf(positionList.get(2));
+                double yPos = Double.valueOf(positionList.get(3));
+                String locationName = String.valueOf(positionList.get(4));
                 //positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
                 //positionView.invalidate();
 
                 //TODO Treshhold ab wann wirklich die Grafik neu gezeichnet werden soll!!!!
-                positionView.updateUserPosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth(),
-                        ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map),currentLocation);
+                //TODO weglassen und schauen wie langsam die gui dann ist
+                positionView.updateUserPosition(xPosLoc, yPosLoc, xPos, yPos,indoorView.getHeight(),indoorView.getWidth(),
+                        ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map),locationName);
 
-                indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
+                //indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
                 beaconLog.append("x: " + positionView.getmPointerX() + " y: " + positionView.getmPointerY() + "\n");
+                //beaconLog.append("x: " + positionView.getmPointerX() + " y: " + imageView.getmPointerY() + "\n");
 
 
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
-
-                String locationname = intent.getStringExtra(BROADCAST_PARAM);
-                if(locationname!=null && !locationname.isEmpty()) {
-                    currentLocation = locationMap.getLocationByName(locationname);
-                    Log.d("MainActivity_Location", "indoorview done");
-
-                }
+//                indoorView.setLocation(beaconService.getLocation());
+                Log.d("MainActivity_Location", "indoorview done" );
             }
         }
-    }
-
-    private void defineLocations(){
-        Log.d("defineLocations","called");
-        locationMap = new LocationMap();
-        HashMap<Door, LocationObject> neighboursList;
-        LocationObject kitchen = new LocationObject("kitchen-2s1");
-        kitchen.setHeight(5.0);
-        kitchen.setWidth(3.5);
-        kitchen.setStartPointX(2.0);
-        kitchen.setStartPointY(0.75);
-        Door bottomDoor = new Door("bottom", 0.5, 5.0, 1.0, 5.0);
-        neighboursList = new HashMap<>();
-        neighboursList.put(bottomDoor, new LocationObject("room-84l"));
-        kitchen.setNeighboursList(neighboursList);
-        locationMap.addLocation("kitchen-2s1", kitchen);
-
-        LocationObject room = new LocationObject("room-84l");
-        room.setHeight(6.0);
-        room.setWidth(5.0);
-        room.setStartPointX(0.5);
-        room.setStartPointY(7.8);
-        Door topDoor = new Door("top", 2.5, 5.5, 3.0, 5.5);
-        neighboursList = new HashMap<>();
-        neighboursList.put(topDoor, kitchen);
-        room.setNeighboursList(neighboursList);
-        locationMap.addLocation("room-84l", room);
     }
 
 }

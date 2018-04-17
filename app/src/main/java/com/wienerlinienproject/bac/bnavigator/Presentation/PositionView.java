@@ -11,13 +11,12 @@ import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-
-import com.wienerlinienproject.bac.bnavigator.Data.LocationObject;
 
 
 //TODO hier LocationObjekte laden oder in der Main Activity bzw die locationMap initialisieren?
@@ -129,13 +128,13 @@ public class PositionView  extends TouchImageView{
 
     //TODO vorhandene bitmap nehmen! nicht immer die initiale drawn Map verwenden! weil desitnation icon überschrieben wird
     //TODO locations überschreiben!
-    public void updateUserPosition(double xPos, double yPos, double viewHeight, double viewWidth,Drawable drawable,LocationObject currentLocation){
+    public void updateUserPosition(double xPosLoc, double yPosLoc, double xPos, double yPos, double viewHeight, double viewWidth,Drawable drawable,String locationName){
 
         indoorViewHeight = viewHeight;
         indoorViewWidth = viewWidth;
 
-        xLocation = currentLocation.getStartPointX();
-        yLocation = currentLocation.getStartPointY();
+        xLocation = xPosLoc;
+        yLocation = yPosLoc;
 
         mPointerX = (float) ((xPos+xLocation)/locationWidth);
         //mPointerX = (float) (xPos/locationWidth * viewWidth);
@@ -145,7 +144,7 @@ public class PositionView  extends TouchImageView{
         // mPointerY = (float) ((5.5-yPos)/locationHeight * viewHeight);
 
 
-        Log.d("updatePos", currentLocation.getName()+ ": Pos: " + xPos +" "+ yPos + "Pointer:" + mPointerX +" "+ mPointerY);
+        Log.d("updatePos", locationName+ ": Pos: " + xPos +" "+ yPos + "Pointer:" + mPointerX +" "+ mPointerY);
         drawUserPosition(drawable);
 
     }
@@ -157,13 +156,10 @@ public class PositionView  extends TouchImageView{
 
         if (destinationPointer != null) {
 
-
             //returnt breite/höhe in pixel (tatsächlich angezeigt)
-            if(isZoomed()){
-                c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x*getCurrentZoom(), destinationPointer.y*getCurrentZoom(),destinationPaint);
-            }else{
-                c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x, destinationPointer.y,destinationPaint);
-            }
+
+            c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x, destinationPointer.y,destinationPaint);
+
             if(userPositionX != 0 && userPositionY != 0){
                 c.drawCircle(userPositionX, userPositionY, mPointerRadius,positionPaint);
             }
@@ -193,10 +189,13 @@ public class PositionView  extends TouchImageView{
     private void drawUserPosition(Drawable drawable) {
 
         //TODO wenn die aktualle bitmap null is dann in die initial einzeichnen, ansonsten dazu zeichnen
+        //if (destinationPointer == null && initialDrawnMap != null && userPositionX == 0 && userPositionY == 0 ) {
         this.initialDrawnMap = drawable;
         actualBitmap = drawableToBitmap(initialDrawnMap);
+        //}
 
 
+        //shiiiiit
         Canvas c = new Canvas(actualBitmap);
 
         //returnt breite/höhe in pixel (tatsächlich angezeigt)
@@ -274,13 +273,13 @@ public class PositionView  extends TouchImageView{
                 if(temp !=null){
                     //TODO besser wäre auf koordinaten in der location konvertieren
 
-                        //Bitmat is scaled to the View, so the Event position has to be scaled to to get the actual position on the Bitmap
-                        destinationPointer = new Point (scaledX-(destinationIcon.getIntrinsicWidth()/2),scaledY-(destinationIcon.getIntrinsicHeight()/2));
-                        destinationRelativePointer = null;
-                        destinationLocation = temp;
-                        destinationSetCallback.onDestinationSet();
-                        bitmapRedrawNeeded = true;
-                    }
+                    //Bitmat is scaled to the View, so the Event position has to be scaled to to get the actual position on the Bitmap
+                    destinationPointer = new Point (scaledX-(destinationIcon.getIntrinsicWidth()/2),scaledY-(destinationIcon.getIntrinsicHeight()/2));
+                    destinationRelativePointer = null;
+                    destinationLocation = temp;
+                    destinationSetCallback.onDestinationSet();
+                    bitmapRedrawNeeded = true;
+                }
 
                 /*if(temp ==null){
                     destinationPointer = null;
@@ -336,7 +335,7 @@ public class PositionView  extends TouchImageView{
 
     public boolean isWithinZoomedFrame(Point p){
         Log.d("positionview zoomedF","Normal x:"+p.x +" normal y:"+ p.y +"\n"
-        +"scaled x:" + p.x*getCurrentZoom()+" scaled y:"+p.y*getCurrentZoom());
+                +"scaled x:" + p.x*getCurrentZoom()+" scaled y:"+p.y*getCurrentZoom());
         if(isZoomed()){
             RectF temp = getPixelRektFromZoomRekt(getZoomedRect());
             Log.d("positionview zoomedR","Center x:"+temp.centerX()+" Center y:"+ temp.centerY() + "\n"+
@@ -386,4 +385,3 @@ public class PositionView  extends TouchImageView{
         public void onDestinationSet();
     }
 }
-
