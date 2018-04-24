@@ -1,7 +1,6 @@
 package  com.wienerlinienproject.bac.bnavigator.Presentation;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -15,7 +14,6 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
@@ -34,14 +32,17 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
 
-import com.estimote.indoorsdk_module.cloud.LocationPosition;
+
 import com.estimote.indoorsdk_module.view.IndoorLocationView;
+import com.wienerlinienproject.bac.bnavigator.Data.Door;
+import com.wienerlinienproject.bac.bnavigator.Data.LocationMap;
+import com.wienerlinienproject.bac.bnavigator.Data.LocationObject;
 import com.wienerlinienproject.bac.bnavigator.R;
 import com.wienerlinienproject.bac.bnavigator.Service.BeaconService;
-//import com.wienerlinienproject.bac.bnavigator.Service.CloudService;
 
 
 public class MainActivity extends AppCompatActivity implements ServiceConnection, PositionView.DestinationSetCallback {
@@ -49,12 +50,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
     private BeaconService beaconService;
-    //private CloudService cloudService;
     private ServiceCallbackReceiver callbackReceiver = new ServiceCallbackReceiver();
     boolean beaconServiceIsBound = false;
     private TextView beaconLog;
     private PositionView positionView;
-    // private TouchImageView imageView;
     private IndoorLocationView indoorView;
     private boolean isFABOpen =false;
 
@@ -64,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private FloatingActionButton fabMyLocation;
     private FloatingActionButton fabNavigateMe;
 
+    private LocationMap locationMap;
 
     private Toolbar myToolbar;
 
@@ -125,7 +125,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         fab1 = (FloatingActionButton) findViewById(R.id.fabFloor1);
         fab2 = (FloatingActionButton) findViewById(R.id.fabFloor2);
         fabNavigateMe = (FloatingActionButton) findViewById(R.id.fabNavigateMe);
-
+        fabNavigateMe.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                positionView.navigateUser();
+            }
+        });
 
         fabMenu.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -148,11 +153,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         Intent intentBeaconService = new Intent(this, BeaconService.class);
         bindService(intentBeaconService, this, Context.BIND_AUTO_CREATE);
-
-
-        //TODO
-        //Intent intentCloudService = new Intent (this, CloudService.class);
-        //bindService(intentCloudService, this, Context.BIND_AUTO_CREATE);
 
         //filtern worauf der receiver hören soll (Anroid vrwendet genrel broadcast)
         IntentFilter filter = new IntentFilter();
@@ -227,7 +227,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         return true;
     }
 
-    //TODO bei add destination die destination location raus holen
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -303,28 +302,60 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 Log.d("MainActivity_Position", "got " + intent.getStringExtra(BROADCAST_PARAM));
                 String positionStr = intent.getStringExtra(BROADCAST_PARAM);
                 List<String> positionList = Arrays.asList(positionStr.split(","));
-                double xPosLoc = Double.valueOf(positionList.get(0));
-                double yPosLoc = Double.valueOf(positionList.get(1));
-                double xPos = Double.valueOf(positionList.get(2));
-                double yPos = Double.valueOf(positionList.get(3));
-                String locationName = String.valueOf(positionList.get(4));
+                //double xPosLoc = Double.valueOf(positionList.get(0));
+                //double yPosLoc = Double.valueOf(positionList.get(1));
+                double xPos = Double.valueOf(positionList.get(0));
+                double yPos = Double.valueOf(positionList.get(1));
+                String locationName = String.valueOf(positionList.get(2));
+
+                updateActiveLocation(locationName);
                 //positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
                 //positionView.invalidate();
-
                 //TODO Treshhold ab wann wirklich die Grafik neu gezeichnet werden soll!!!!
                 //TODO weglassen und schauen wie langsam die gui dann ist
-                positionView.updateUserPosition(xPosLoc, yPosLoc, xPos, yPos,indoorView.getHeight(),indoorView.getWidth(),
-                        ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map),locationName);
+                positionView.updateUserPosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth(),
+                        ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map));
 
                 //indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
                 beaconLog.append("x: " + positionView.getmPointerX() + " y: " + positionView.getmPointerY() + "\n");
                 //beaconLog.append("x: " + positionView.getmPointerX() + " y: " + imageView.getmPointerY() + "\n");
 
-
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
+                fillLocationMap(intent.getStringExtra(BROADCAST_PARAM));
+                positionView.setLocationMap(locationMap);
 //                indoorView.setLocation(beaconService.getLocation());
                 Log.d("MainActivity_Location", "indoorview done" );
+
             }
+        }
+
+        private void updateActiveLocation(String name){
+            locationMap.setActiveLocation(locationMap.getLocationByName(name));
+        }
+
+        private void fillLocationMap(String lastDefinedLocation){
+            locationMap = new LocationMap();
+            HashMap<LocationObject, Door> neighboursListKitchen= new HashMap<>();
+            HashMap<LocationObject, Door> neighboursListRoom= new HashMap<>();
+            LocationObject kitchen = new LocationObject("kitchen-2s1");
+            kitchen.setHeight(5.0);
+            kitchen.setWidth(3.5);
+            kitchen.setStartPointX(2.0);
+            kitchen.setStartPointY(0.75);
+            Door bottomDoor = new Door("bottom", 2.5, 0, 3.0, 0);
+            LocationObject room = new LocationObject("room-84l");
+            room.setHeight(6.0);
+            room.setWidth(5.0);
+            room.setStartPointX(0.5);
+            room.setStartPointY(7.8);
+            locationMap.addLocation("kitchen-2s1", kitchen);
+            locationMap.addLocation("room-84l", room);
+            Door topDoor = new Door("top", 1.0, 5.0, 1.5, 5.0);
+            neighboursListRoom.put(locationMap.getLocationByName("kitchen-2s1"), topDoor);
+            room.setNeighboursList(neighboursListRoom);
+            neighboursListKitchen.put(locationMap.getLocationByName("room-84l"), bottomDoor);
+            kitchen.setNeighboursList(neighboursListKitchen);
+            locationMap.setActiveLocation(locationMap.getLocationByName(lastDefinedLocation));
         }
     }
 

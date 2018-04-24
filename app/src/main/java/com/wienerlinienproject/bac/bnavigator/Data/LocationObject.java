@@ -17,7 +17,7 @@ public class LocationObject {
     private Location cloudLocation;
 
     // oben, unten, links, rechts
-    private HashMap<Door, LocationObject> neighboursList;
+    private HashMap<LocationObject, Door> neighboursList;
 
     public LocationObject(String name) {
         this.name = name;
@@ -37,11 +37,11 @@ public class LocationObject {
         this.neighboursList = neighboursList;
     }
 
-    public HashMap<Door, LocationObject> getNeighboursList() {
+    public HashMap<LocationObject,Door> getNeighboursList() {
         return neighboursList;
     }
 
-    public void setNeighboursList(HashMap<Door, LocationObject> neighboursList) {
+    public void setNeighboursList(HashMap<LocationObject, Door> neighboursList) {
         this.neighboursList = neighboursList;
     }
 
