@@ -187,8 +187,8 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
     }*/
 
     public void setCurrentLocation(Location newCurrent) {
-        Log.d("altbeaconRanging",  "called new currentlocation "+newCurrent.getName());
-        Log.d("locationManager",  "AAAAAAAAAAAcalled new currentlocation "+newCurrent.getName());
+        Log.d("altbeaconRanging",  "called new currentlocation "+newCurrent.getIdentifier());
+        Log.d("locationManager",  "AAAAAAAAAAAcalled new currentlocation "+newCurrent.getIdentifier());
         activeLocation = newCurrent;
         //locationMap.setActiveLocation(newCurrent);
 
@@ -203,6 +203,7 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
             @Override
             public void onPositionUpdate(LocationPosition position) {
                 //TODO schauen ob es immer der selbe indoorManager ist der nur schneller updates schickt => ja ist immer das selbe objekt
+
                 if(locationToRange.getIdentifier().equals(activeLocation.getIdentifier())){
                     Log.d("locationManager", "Mgr:"+ indoorManager.toString().substring(30) +" PosUpdate:" + position.getX() + ", " + position.getY()+" Location:"+locationToRange.getIdentifier() +
                             " Count:" + tempcount);
@@ -296,7 +297,7 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
             if(countRoom >= 3){
 
                 //Log.d("altbeaconranging", "current:"+locationMap.getActiveLocation().getName() + " vs:room-841 " + locationMap.getActiveLocation().getName().equals("room-84l"));
-                if(!activeLocation.getName().equals("room-84l")){
+                if(!activeLocation.getIdentifier().equals("room-84l")){
                     //TODO nullpointer bei change auf room
                     Log.d("altbeaconranging",allLocations.get("room-84l").getIdentifier());
                     setCurrentLocation(allLocations.get("room-84l"));
@@ -304,7 +305,7 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
                 countKitchen = 0;
                 countRoom =0;
             }else if(countKitchen >= 3){
-                if(!activeLocation.getName().equals("kitchen-2s1")){
+                if(!activeLocation.getIdentifier().equals("kitchen-2s1")){
                     //Log.d("altbeaconranging",locationMap.getLocationByName("kitchen-2s1").getName());
                     setCurrentLocation(allLocations.get("kitchen-2s1"));
                 }
