@@ -333,55 +333,68 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             Log.d("MainActivity_Callback", "received callback");
 
             if(intent.getAction().equals(BROADCAST_BeaconService)){
-                Log.d("MainActivity_Position", "got " + intent.getStringExtra(BROADCAST_PARAM));
-                String positionStr = intent.getStringExtra(BROADCAST_PARAM);
-                List<String> positionList = Arrays.asList(positionStr.split(","));
-                //double xPosLoc = Double.valueOf(positionList.get(0));
-                //double yPosLoc = Double.valueOf(positionList.get(1));
-                double xPos = Double.valueOf(positionList.get(0));
-                double yPos = Double.valueOf(positionList.get(1));
-                String locationName = String.valueOf(positionList.get(2));
+                if(!intent.getStringExtra(BROADCAST_PARAM).startsWith("Beacon")) {
+                    Log.d("MainActivity_Position", "got " + intent.getStringExtra(BROADCAST_PARAM));
+                    String positionStr = intent.getStringExtra(BROADCAST_PARAM);
+                    List<String> positionList = Arrays.asList(positionStr.split(","));
+                    //double xPosLoc = Double.valueOf(positionList.get(0));
+                    //double yPosLoc = Double.valueOf(positionList.get(1));
+                    double xPos = Double.valueOf(positionList.get(0));
+                    double yPos = Double.valueOf(positionList.get(1));
+                    String locationName = String.valueOf(positionList.get(2));
 
-                updateActiveLocation(locationName);
-                //positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
-                //positionView.invalidate();
-                //TODO Treshhold ab wann wirklich die Grafik neu gezeichnet werden soll!!!!
+                    updateActiveLocation(locationName);
+                    //positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
+                    //positionView.invalidate();
+                    //TODO Treshhold ab wann wirklich die Grafik neu gezeichnet werden soll!!!!
 
-                //TODO abchecken ob gerundete werte für die lib auch passen
-                //TODO posUpdate wird noch nicht gerundet!
-                //TODO nicht nur ein Log über position updates sondern auch die beacons in range ausgeben
-                DecimalFormat df = new DecimalFormat("#.####");
-                //Log.d("locationMain","roundet:" + xPos + " to:" + df.format(xPos));
-                //Log.d("locationMain","roundet:" + yPos + " to:" + df.format(yPos));
+                    //TODO abchecken ob gerundete werte für die lib auch passen
+                    //TODO posUpdate wird noch nicht gerundet!
+                    //TODO nicht nur ein Log über position updates sondern auch die beacons in range ausgeben
+                    DecimalFormat df = new DecimalFormat("#.####");
+                    //Log.d("locationMain","roundet:" + xPos + " to:" + df.format(xPos));
+                    //Log.d("locationMain","roundet:" + yPos + " to:" + df.format(yPos));
 
-                positionView.updateUserPosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth(),
-                        ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map));
+                    positionView.updateUserPosition(xPos, yPos, indoorView.getHeight(), indoorView.getWidth(),
+                            ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map));
 
-                //indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
-                Spannable wordtoSpan;
-                if(locationName.equals("kitchen-2s1")){
-                    wordtoSpan = new SpannableString("Kitchen: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()) +"\n");
-                    wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#FFF000")), 0, 7, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                }else if(locationName.equals("room-84l")){
-                    wordtoSpan = new SpannableString("Room: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()) +"\n");
-                    wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#000FFF")), 0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    //indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
+                    Spannable wordtoSpan;
+                    if (locationName.equals("kitchen-2s1")) {
+                        wordtoSpan = new SpannableString("\nKitchen: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()));
+                        wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#FFF000")), 0, 7, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    } else if (locationName.equals("room-84l")) {
+                        wordtoSpan = new SpannableString("\nRoom: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()));
+                        wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#000FFF")), 0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    } else {
+                        wordtoSpan = new SpannableString("\nFlur: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()));
+                        wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#FF0000")), 0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
+                    locationLog.append(wordtoSpan);
+
+                    //locationLog.append(locationName+": x: " + positionView.getmPointerX() + " y: " + positionView.getmPointerY() +"\n");
                 }else{
-                    wordtoSpan = new SpannableString("Flur: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()) +"\n");
-                    wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#FF0000")), 0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    String positionStr = intent.getStringExtra(BROADCAST_PARAM);
+                    String[]beaconInfo = positionStr.split(",");
+                    DecimalFormat df = new DecimalFormat("#.##");
+                    //"Beacon" muss abgeschnitten werden
+                    String locationNearestBeacon = beaconInfo[0].substring(7,beaconInfo[0].length());
+                    if(locationNearestBeacon.equals("Flur")){
+                        locationMap.setActiveLocation(locationMap.getLocationByName("flur"));
+                        positionView.updateUserPosition(0.5, 1.0,indoorView.getHeight(),indoorView.getWidth(),
+                                ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map));
+                        beaconLog.append("\nFlur:"+ beaconInfo[1].substring(0,3)+ " "+beaconInfo[2].substring(0,5)+"m");
+                    }else if(locationNearestBeacon.equals("Kitchen")){
+                        beaconLog.append("\nKitchen:"+ beaconInfo[1].substring(0,3)+ " "+beaconInfo[2].substring(0,5)+"m");
+                    }else{
+                        beaconLog.append("\nRoom:"+ beaconInfo[1].substring(0,3)+ " "+beaconInfo[2].substring(0,5)+"m");
+                    }
                 }
-                locationLog.append(wordtoSpan);
-
-                //locationLog.append(locationName+": x: " + positionView.getmPointerX() + " y: " + positionView.getmPointerY() +"\n");
-
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
                 fillLocationMap(intent.getStringExtra(BROADCAST_PARAM));
                 positionView.setLocationMap(locationMap);
 //                indoorView.setLocation(beaconService.getLocation());
-                Log.d("MainActivity_Location", "indoorview done" );
-
-            }else if(intent.getAction().equals(BROADCAST_nearestBeacon)){
-                //TODO stop indoormanager
-
+                Log.d("MainActivity_Location", "indoorview done");
             }
         }
 
@@ -399,13 +412,24 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             kitchen.setStartPointX(2.0);
             kitchen.setStartPointY(0.75);
             Door bottomDoor = new Door("bottom", 2.5, 0, 3.0, 0);
+
             LocationObject room = new LocationObject("room-84l");
             room.setHeight(6.0);
             room.setWidth(5.0);
             room.setStartPointX(0.5);
             room.setStartPointY(7.8);
+
+            LocationObject flur = new LocationObject("flur");
+            flur.setHeight(2.0);
+            flur.setWidth(1.0);
+            flur.setStartPointX(2.5);
+            flur.setStartPointY(5.75);
+
+
             locationMap.addLocation("kitchen-2s1", kitchen);
             locationMap.addLocation("room-84l", room);
+            locationMap.addLocation("flur",flur);
+
             Door topDoor = new Door("top", 1.0, 5.0, 1.5, 5.0);
             neighboursListRoom.put(locationMap.getLocationByName("kitchen-2s1"), topDoor);
             room.setNeighboursList(neighboursListRoom);

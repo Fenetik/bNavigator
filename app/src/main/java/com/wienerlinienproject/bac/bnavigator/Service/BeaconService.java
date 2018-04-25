@@ -65,6 +65,9 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
     private int countRoom = 0;
     private int countKitchen = 0;
 
+    //Flag um zu erkennen ob Flur die active location ist oder nicht (da wir ja keine cloudlocation davon haben)
+    private boolean flurActive = false;
+
     public BeaconService() {
     }
 
@@ -294,13 +297,41 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
         //manchmal ist die collection leer => nearestBeacon wäre null
         if(nearestBeacon != null){
             Log.d("altbeaconRanging", "nearest Beacon:" + nearestBeacon.getId1());
+
             if (nearestBeacon.getId1().toString().startsWith("0xbbbb")){
-                countRoom += 1;
+                //countRoom += 1;
+                if(!activeLocation.getIdentifier().equals("room-84l")|flurActive){
+                    Log.d("altbeaconranging","changing Location to room");
+                    setCurrentLocation(allLocations.get("room-84l"));
+                    flurActive = false;
+                }
+
+                Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
+                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, "Beacon"+ " Room,"+nearestBeacon.getId2()+","+nearestBeacon.getDistance());
+                sendBroadcast(broadcast);
+            }else if(nearestBeacon.getId1().toString().startsWith("0xaaaa")){
+                //countKitchen +=1;
+                if(!activeLocation.getIdentifier().equals("kitchen-2s1")|flurActive){
+                    Log.d("altbeaconranging","changing Location to kitchen");
+                    setCurrentLocation(allLocations.get("kitchen-2s1"));
+                    flurActive = false;
+                }
+                Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
+                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, "Beacon"+" Kitchen,"+nearestBeacon.getId2()+","+nearestBeacon.getDistance());
+                sendBroadcast(broadcast);
+
             }else{
-                countKitchen +=1;
+                //Flur beacon da sonst die position herumspringen würde
+                Log.d("altbeaconranging","Location is now Flur");
+                indoorManager.stopPositioning();
+                flurActive = true;
+                Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_BeaconService);
+                broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, "Beacon"+ " Flur,"+nearestBeacon.getId2()+","+nearestBeacon.getDistance());
+                sendBroadcast(broadcast);
+
             }
-            //TODO :/
-            if(countRoom >= 1){
+
+          /*  if(countRoom >= 1){
                 //Log.d("altbeaconranging", "current:"+locationMap.getActiveLocation().getName() + " vs:room-841 " + locationMap.getActiveLocation().getName().equals("room-84l"));
                 if(!activeLocation.getIdentifier().equals("room-84l")){
                     Log.d("altbeaconranging","changing Location");
@@ -308,7 +339,7 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
                 }
                 countKitchen = 0;
                 countRoom =0;
-                //TODO :/
+
             }else if(countKitchen >= 1){
                 if(!activeLocation.getIdentifier().equals("kitchen-2s1")){
                     Log.d("altbeaconranging","changing Location");
@@ -316,7 +347,7 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
                 }
                 countKitchen = 0;
                 countRoom =0;
-            }
+            }*/
         }
 //        Log.d("altbeaconRanging","Current Loc:"+locationMap.getActiveLocation().getName()+ " CountKitchen: " + countKitchen+ " CountRoom:"+ countRoom);
     }
