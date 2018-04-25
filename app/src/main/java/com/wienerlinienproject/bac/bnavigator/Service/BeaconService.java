@@ -298,8 +298,8 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
                 //Log.d("altbeaconranging", "current:"+locationMap.getActiveLocation().getName() + " vs:room-841 " + locationMap.getActiveLocation().getName().equals("room-84l"));
                 if(!activeLocation.getName().equals("room-84l")){
                     //TODO nullpointer bei change auf room
-                    //Log.d("altbeaconranging",locationMap.getLocationByName("room-841").getName());
-                    setCurrentLocation(allLocations.get("room-841"));
+                    Log.d("altbeaconranging",allLocations.get("room-84l").getIdentifier());
+                    setCurrentLocation(allLocations.get("room-84l"));
                 }
                 countKitchen = 0;
                 countRoom =0;

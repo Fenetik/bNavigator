@@ -157,22 +157,31 @@ public class PositionView  extends TouchImageView{
                 float destinationMiddleX =  destinationPointer.x + destinationIcon.getMinimumWidth()/2;
                 float destinationMiddleY =  destinationPointer.y + destinationIcon.getMinimumHeight()/2;
                 if (simplenavigation) {
-                    Log.d("navigate", "drawSimpleNavigationLine from - x: " + destinationPointer.x + " y: " + destinationPointer.y + " to x: " + userPositionX + " y: " + userPositionY);
-                    c.drawLine(destinationMiddleX, destinationMiddleY, userPositionX, userPositionY, p);
+                    if(destinationLocationObject.getName().equals(locationMap.getActiveLocation().getName())){
+                        simplenavigation = false;
+                        advacednavigation = true;
+                    } else {
+                        Log.d("navigate", "drawSimpleNavigationLine from - x: " + destinationPointer.x + " y: " + destinationPointer.y + " to x: " + userPositionX + " y: " + userPositionY);
+                        c.drawLine(destinationMiddleX, destinationMiddleY, userPositionX, userPositionY, p);
+                    }
                 } else if (advacednavigation) {
-                    Door userLocationDoor = destinationLocationObject.getNeighboursList().get(locationMap.getActiveLocation());
-                    Door destinationDoor = locationMap.getActiveLocation().getNeighboursList().get(destinationLocationObject);
-                    // ((door.x + startpointLocation.x) / locationWidth) * bitmapHeight
-                    // ((door.y + startpointLocation.Y) / locationHeight) * bitmapWidth
-                    double userLocationDoorX = (userLocationDoor.getStartPointX() + locationMap.getActiveLocation().getStartPointX()) / locationWidth * temp.getWidth();
-                    double destinationDoorX = ((destinationDoor.getStartPointX() + destinationLocationObject.getStartPointX()) / locationWidth) * temp.getWidth();
-                    double userLocationDoorY = ((userLocationDoor.getStartPointY() + locationMap.getActiveLocation().getStartPointY()) / locationHeight) * temp.getHeight();
-                    double destinationDoorY = ((destinationDoor.getStartPointY() + destinationLocationObject.getStartPointY()) / locationHeight) * temp.getHeight();
+                    if(destinationLocationObject.getName().equals(locationMap.getActiveLocation().getName())){
+                        simplenavigation = true;
+                        advacednavigation = false;
+                    } else {
+                        Door userLocationDoor = destinationLocationObject.getNeighboursList().get(locationMap.getActiveLocation());
+                        Door destinationDoor = locationMap.getActiveLocation().getNeighboursList().get(destinationLocationObject);
+                        // ((door.x + startpointLocation.x) / locationWidth) * bitmapHeight
+                        // ((door.y + startpointLocation.Y) / locationHeight) * bitmapWidth
+                        double userLocationDoorX = (userLocationDoor.getStartPointX() + locationMap.getActiveLocation().getStartPointX()) / locationWidth * temp.getWidth();
+                        double destinationDoorX = ((destinationDoor.getStartPointX() + destinationLocationObject.getStartPointX()) / locationWidth) * temp.getWidth();
+                        double userLocationDoorY = ((userLocationDoor.getStartPointY() + locationMap.getActiveLocation().getStartPointY()) / locationHeight) * temp.getHeight();
+                        double destinationDoorY = ((destinationDoor.getStartPointY() + destinationLocationObject.getStartPointY()) / locationHeight) * temp.getHeight();
 
-                    c.drawLine(userPositionX, userPositionY, (float) userLocationDoorX, (float) userLocationDoorY, p);
-                    c.drawLine((float) userLocationDoorX, (float) userLocationDoorY, (float) destinationDoorX, (float) destinationDoorY, p);
-                    c.drawLine((float) destinationDoorX, (float) destinationDoorY, destinationMiddleX, destinationMiddleY, p);
-
+                        c.drawLine(userPositionX, userPositionY, (float) userLocationDoorX, (float) userLocationDoorY, p);
+                        c.drawLine((float) userLocationDoorX, (float) userLocationDoorY, (float) destinationDoorX, (float) destinationDoorY, p);
+                        c.drawLine((float) destinationDoorX, (float) destinationDoorY, destinationMiddleX, destinationMiddleY, p);
+                    }
                 }
             }
             c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x, destinationPointer.y,destinationPaint);
