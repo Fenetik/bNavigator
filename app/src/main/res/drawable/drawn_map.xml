@@ -9,7 +9,7 @@
         android:strokeColor="#FFF000"
         android:strokeWidth="3"
         android:fillColor="#FFFEFF"
-        android:pathData="M200,75 v500 h350 v-500 h-350  z"
+        android:pathData="M200,575 h350 v-550 h-500 v350 h150 z"
         />
     <path
         android:name="natsFlur"

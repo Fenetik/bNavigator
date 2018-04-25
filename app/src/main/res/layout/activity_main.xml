@@ -94,16 +94,41 @@
             android:src="@drawable/layers_white_48dp" />
     </FrameLayout>
 
-    <TextView android:text="Finding Beacons/Locations"
-        android:layout_width="700px"
-        android:layout_height="wrap_content"
+    <TextView android:text="Waiting for Pos Updates"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:id="@+id/locationLog"
+    android:lines="5"
+    android:scrollbars = "vertical"
+    tools:layout_editor_absoluteY="0dp"
+    tools:layout_editor_absoluteX="0dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:gravity="bottom"
+        android:layout_alignParentLeft="true"
+
+        android:visibility="invisible"/>
+
+    <TextView android:text="Finding Beacons"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
         android:id="@+id/beaconLog"
         android:lines="5"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="10dp"
         android:scrollbars = "vertical"
-        android:gravity="bottom"
         tools:layout_editor_absoluteY="0dp"
         tools:layout_editor_absoluteX="0dp"
-        android:layout_alignParentBottom="true"
+        android:gravity="bottom"
+        android:layout_alignParentRight="true"
         android:visibility="invisible"/>
+
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/BtnDebug"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="DebugMode"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="50dp"/>
 
 </RelativeLayout>

@@ -23,15 +23,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.method.ScrollingMovementMethod;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
@@ -52,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private BeaconService beaconService;
     private ServiceCallbackReceiver callbackReceiver = new ServiceCallbackReceiver();
     boolean beaconServiceIsBound = false;
+    private TextView locationLog;
     private TextView beaconLog;
     private PositionView positionView;
     private IndoorLocationView indoorView;
@@ -62,6 +68,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private FloatingActionButton fab2;
     private FloatingActionButton fabMyLocation;
     private FloatingActionButton fabNavigateMe;
+
+    private Button debugModeBtn;
+    private boolean debugMode = false;
 
     private LocationMap locationMap;
 
@@ -106,8 +115,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         positionView.setDestinationIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_place_black_48dp));
         positionView.setBackgroundMap(ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map));
 
+        locationLog = (TextView) findViewById(R.id.locationLog);
+        locationLog.setMovementMethod(new ScrollingMovementMethod());
+
         beaconLog = (TextView) findViewById(R.id.beaconLog);
         beaconLog.setMovementMethod(new ScrollingMovementMethod());
+
 
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         myToolbar.setTitle(Html.fromHtml("<font color='#ffffff'>Aspern</font>"));
@@ -125,6 +138,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         fab1 = (FloatingActionButton) findViewById(R.id.fabFloor1);
         fab2 = (FloatingActionButton) findViewById(R.id.fabFloor2);
         fabNavigateMe = (FloatingActionButton) findViewById(R.id.fabNavigateMe);
+
+        debugModeBtn = (Button) findViewById(R.id.BtnDebug);
+
         fabNavigateMe.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -144,6 +160,22 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 }
             }
         });
+
+        debugModeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!debugMode){
+                    locationLog.setVisibility(View.VISIBLE);
+                    beaconLog.setVisibility(View.VISIBLE);
+                    debugMode = true;
+                }else{
+                    locationLog.setVisibility(View.INVISIBLE);
+                    beaconLog.setVisibility(View.INVISIBLE);
+                    debugMode = false;
+                }
+            }
+        });
+
     }
 
     @Override
@@ -291,6 +323,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         public static final String BROADCAST_BeaconService ="com.wienerlinienproject.bac.bnavigator.beaconServiceAction";
         public static final String BROADCAST_getLocation ="com.wienerlinienproject.bac.bnavigator.cloudServiceGetLocation";
+        public static final String BROADCAST_nearestBeacon ="com.wienerlinienproject.bac.bnavigator.beaconServiceNearestBeacon";
+
 
         public static final String BROADCAST_PARAM = "param";
 
@@ -312,19 +346,41 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 //positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
                 //positionView.invalidate();
                 //TODO Treshhold ab wann wirklich die Grafik neu gezeichnet werden soll!!!!
-                //TODO weglassen und schauen wie langsam die gui dann ist
+
+                //TODO abchecken ob gerundete werte für die lib auch passen
+                //TODO posUpdate wird noch nicht gerundet!
+                //TODO nicht nur ein Log über position updates sondern auch die beacons in range ausgeben
+                DecimalFormat df = new DecimalFormat("#.####");
+                //Log.d("locationMain","roundet:" + xPos + " to:" + df.format(xPos));
+                //Log.d("locationMain","roundet:" + yPos + " to:" + df.format(yPos));
+
                 positionView.updateUserPosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth(),
                         ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map));
 
                 //indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
-                beaconLog.append("x: " + positionView.getmPointerX() + " y: " + positionView.getmPointerY() + "\n");
-                //beaconLog.append("x: " + positionView.getmPointerX() + " y: " + imageView.getmPointerY() + "\n");
+                Spannable wordtoSpan;
+                if(locationName.equals("kitchen-2s1")){
+                    wordtoSpan = new SpannableString("Kitchen: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()) +"\n");
+                    wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#FFF000")), 0, 7, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }else if(locationName.equals("room-84l")){
+                    wordtoSpan = new SpannableString("Room: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()) +"\n");
+                    wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#000FFF")), 0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }else{
+                    wordtoSpan = new SpannableString("Flur: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()) +"\n");
+                    wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#FF0000")), 0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
+                locationLog.append(wordtoSpan);
+
+                //locationLog.append(locationName+": x: " + positionView.getmPointerX() + " y: " + positionView.getmPointerY() +"\n");
 
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
                 fillLocationMap(intent.getStringExtra(BROADCAST_PARAM));
                 positionView.setLocationMap(locationMap);
 //                indoorView.setLocation(beaconService.getLocation());
                 Log.d("MainActivity_Location", "indoorview done" );
+
+            }else if(intent.getAction().equals(BROADCAST_nearestBeacon)){
+                //TODO stop indoormanager
 
             }
         }

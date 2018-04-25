@@ -197,9 +197,12 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
 
     private void indoorManagerInit(final Location locationToRange) {
         Log.d("locationManager","Init called");
+        if (indoorManager != null){
+            Log.d("locationManager", "Stopping Positioning for "+ indoorManager.toString().substring(30));
+            indoorManager.stopPositioning();
+        }
         indoorManager = new IndoorLocationManagerBuilder(BeaconService.this,locationToRange,cloudCredentials).withDefaultScanner().build();
         indoorManager.setOnPositionUpdateListener(new OnPositionUpdateListener() {
-
             @Override
             public void onPositionUpdate(LocationPosition position) {
                 //TODO schauen ob es immer der selbe indoorManager ist der nur schneller updates schickt => ja ist immer das selbe objekt
@@ -287,26 +290,28 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
                 }
             }
         }
+
         //manchmal ist die collection leer => nearestBeacon wäre null
         if(nearestBeacon != null){
+            Log.d("altbeaconRanging", "nearest Beacon:" + nearestBeacon.getId1());
             if (nearestBeacon.getId1().toString().startsWith("0xbbbb")){
                 countRoom += 1;
             }else{
                 countKitchen +=1;
             }
-            if(countRoom >= 3){
-
+            //TODO :/
+            if(countRoom >= 1){
                 //Log.d("altbeaconranging", "current:"+locationMap.getActiveLocation().getName() + " vs:room-841 " + locationMap.getActiveLocation().getName().equals("room-84l"));
                 if(!activeLocation.getIdentifier().equals("room-84l")){
-                    //TODO nullpointer bei change auf room
-                    Log.d("altbeaconranging",allLocations.get("room-84l").getIdentifier());
+                    Log.d("altbeaconranging","changing Location");
                     setCurrentLocation(allLocations.get("room-84l"));
                 }
                 countKitchen = 0;
                 countRoom =0;
-            }else if(countKitchen >= 3){
+                //TODO :/
+            }else if(countKitchen >= 1){
                 if(!activeLocation.getIdentifier().equals("kitchen-2s1")){
-                    //Log.d("altbeaconranging",locationMap.getLocationByName("kitchen-2s1").getName());
+                    Log.d("altbeaconranging","changing Location");
                     setCurrentLocation(allLocations.get("kitchen-2s1"));
                 }
                 countKitchen = 0;
