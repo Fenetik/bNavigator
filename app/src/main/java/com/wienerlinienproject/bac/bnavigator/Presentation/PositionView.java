@@ -157,17 +157,15 @@ public class PositionView  extends TouchImageView{
                 float destinationMiddleX =  destinationPointer.x + destinationIcon.getMinimumWidth()/2;
                 float destinationMiddleY =  destinationPointer.y + destinationIcon.getMinimumHeight()/2;
                 if (simplenavigation) {
-                    if(destinationLocationObject.getName().equals(locationMap.getActiveLocation().getName())){
-                        simplenavigation = false;
-                        advacednavigation = true;
+                    if(!destinationLocationObject.getName().equals(locationMap.getActiveLocation().getName())){
+                        navigateUser();
                     } else {
                         Log.d("navigate", "drawSimpleNavigationLine from - x: " + destinationPointer.x + " y: " + destinationPointer.y + " to x: " + userPositionX + " y: " + userPositionY);
                         c.drawLine(destinationMiddleX, destinationMiddleY, userPositionX, userPositionY, p);
                     }
                 } else if (advacednavigation) {
                     if(destinationLocationObject.getName().equals(locationMap.getActiveLocation().getName())){
-                        simplenavigation = true;
-                        advacednavigation = false;
+                        navigateUser();
                     } else {
                         Door userLocationDoor = destinationLocationObject.getNeighboursList().get(locationMap.getActiveLocation());
                         Door destinationDoor = locationMap.getActiveLocation().getNeighboursList().get(destinationLocationObject);
