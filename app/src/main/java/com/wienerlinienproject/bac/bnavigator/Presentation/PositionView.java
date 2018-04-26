@@ -168,6 +168,7 @@ public class PositionView  extends TouchImageView{
                         navigateUser();
                     } else {
                         Door userLocationDoor = destinationLocationObject.getNeighboursList().get(locationMap.getActiveLocation());
+                        //TODO flur scheißt rein weils zur active location wird aber keine neighbourslist hat
                         Door destinationDoor = locationMap.getActiveLocation().getNeighboursList().get(destinationLocationObject);
                         // ((door.x + startpointLocation.x) / locationWidth) * bitmapHeight
                         // ((door.y + startpointLocation.Y) / locationHeight) * bitmapWidth

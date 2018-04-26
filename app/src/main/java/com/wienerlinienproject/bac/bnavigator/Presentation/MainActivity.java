@@ -362,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     Spannable wordtoSpan;
                     if (locationName.equals("kitchen-2s1")) {
                         wordtoSpan = new SpannableString("\nKitchen: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()));
-                        wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#FFF000")), 0, 7, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#FFF000")), 0, 8, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                     } else if (locationName.equals("room-84l")) {
                         wordtoSpan = new SpannableString("\nRoom: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()));
                         wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#000FFF")), 0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -383,11 +383,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                         locationMap.setActiveLocation(locationMap.getLocationByName("flur"));
                         positionView.updateUserPosition(0.5, 1.0,indoorView.getHeight(),indoorView.getWidth(),
                                 ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map));
-                        beaconLog.append("\nFlur:"+ beaconInfo[1].substring(0,3)+ " "+beaconInfo[2].substring(0,5)+"m");
+                        beaconLog.append("\nFlur:"+ beaconInfo[1].substring(0,4)+ " "+beaconInfo[2].substring(0,5)+"m");
                     }else if(locationNearestBeacon.equals("Kitchen")){
-                        beaconLog.append("\nKitchen:"+ beaconInfo[1].substring(0,3)+ " "+beaconInfo[2].substring(0,5)+"m");
+                        beaconLog.append("\nKitchen:"+ beaconInfo[1].substring(0,4)+ " "+beaconInfo[2].substring(0,5)+"m");
                     }else{
-                        beaconLog.append("\nRoom:"+ beaconInfo[1].substring(0,3)+ " "+beaconInfo[2].substring(0,5)+"m");
+                        beaconLog.append("\nRoom:"+ beaconInfo[1].substring(0,4)+ " "+beaconInfo[2].substring(0,5)+"m");
                     }
                 }
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
