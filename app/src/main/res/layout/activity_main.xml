@@ -95,18 +95,18 @@
     </FrameLayout>
 
     <TextView android:text="Waiting for Pos Updates"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/locationLog"
-    android:lines="7"
-    android:scrollbars = "vertical"
-    tools:layout_editor_absoluteY="0dp"
-    tools:layout_editor_absoluteX="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/locationLog"
+        android:lines="7"
+        android:scrollbars = "vertical"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="0dp"
         android:layout_marginBottom="70dp"
         android:layout_marginLeft="10dp"
         android:gravity="bottom|left"
         android:layout_alignParentLeft="true"
-
+        android:layout_alignParentBottom="true"
         android:visibility="invisible"/>
 
     <TextView android:text="Finding Beacons"
@@ -120,7 +120,9 @@
         tools:layout_editor_absoluteY="0dp"
         tools:layout_editor_absoluteX="0dp"
         android:gravity="bottom|right"
+        android:layout_alignRight="@+id/locationLog"
         android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
         android:visibility="invisible"/>
 
     <android.support.v7.widget.AppCompatButton
