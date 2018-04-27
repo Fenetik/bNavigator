@@ -118,17 +118,13 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
         });
     }
 
-    public LocationMap getLocationMap(){
-        return this.locationMap;
-    }
-
     private void doneWithCloud(Location location){
-        setCurrentLocation(location);
 
         Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_getLocation);
         broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, location.getIdentifier());
         sendBroadcast(broadcast);
 
+        setCurrentLocation(location);
         //Ranging darf erst nach define location fertig ist beginnen
         altBeaconManager.bind(this);
     }

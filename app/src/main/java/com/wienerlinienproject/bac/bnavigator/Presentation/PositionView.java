@@ -1,7 +1,10 @@
 package com.wienerlinienproject.bac.bnavigator.Presentation;
 
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -10,6 +13,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.v7.app.AlertDialog;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -57,6 +61,8 @@ public class PositionView  extends TouchImageView{
     private double indoorViewWidth;
     private Bitmap actualBitmap = null;
     private Drawable initialDrawnMap;
+
+    private boolean arrivedAtDestination;
 
     //TODO destinationRelativePointer
     private Point destinationPointer;
@@ -113,6 +119,7 @@ public class PositionView  extends TouchImageView{
 
         navigationActive = false;
         simplenavigation = false;
+        arrivedAtDestination = false;
         advacednavigation = false;
         //movePlayer0Runnable.run(); //this is the initial call to draw player at index 0
 
@@ -145,68 +152,82 @@ public class PositionView  extends TouchImageView{
         Bitmap temp = drawableToBitmap(initialDrawnMap);
         Canvas c = new Canvas(temp);
 
+        if(!arrivedAtDestination) {
+            if (destinationPointer != null) {
 
-        if (destinationPointer != null) {
+                //returnt breite/höhe in pixel (tatsächlich angezeigt)
 
-            //returnt breite/höhe in pixel (tatsächlich angezeigt)
+                if (navigationActive) {
+                    Paint p = new Paint();
+                    p.setColor(Color.GREEN);
+                    p.setStrokeWidth(20f);
+                    float destinationMiddleX = destinationPointer.x + destinationIcon.getMinimumWidth() / 2;
+                    float destinationMiddleY = destinationPointer.y + destinationIcon.getMinimumHeight() / 2;
+                    if (!(userPositionY == 0 && userPositionX == 0)) {
+                        // destX <= userX && userX <= destX
+                        double destinationRangeXPlus = destinationMiddleX + 100;
+                        double destinationRangeYPlus = destinationMiddleY + 100;
+                        double destinationRangeXMinus = destinationMiddleX - 100;
+                        double destinationRangeYMinus = destinationMiddleY - 100;
+                        Log.d("navigate", "destinationRange: x: " + destinationRangeXPlus + " to " + destinationRangeXMinus + " y: " + destinationRangeYPlus + " to " + destinationRangeYMinus);
+                        if ((destinationRangeXMinus <= userPositionX && destinationRangeXPlus >= userPositionX) && (destinationRangeYMinus <= userPositionY && destinationRangeYPlus >= userPositionY)) {
+                            // TODO Notification that user arrived at destination
+                            Log.d("navigate", "You have reached the destination");
+                            arrivedAtDestination = true;
+                        } else {
+                            if (simplenavigation) {
+                                if (!destinationLocationObject.getName().equals(locationMap.getActiveLocation().getName())) {
+                                    navigateUser();
+                                } else {
+                                    Log.d("navigate", "drawSimpleNavigationLine from - x: " + destinationPointer.x + " y: " + destinationPointer.y + " to x: " + userPositionX + " y: " + userPositionY);
+                                    c.drawLine(destinationMiddleX, destinationMiddleY, userPositionX, userPositionY, p);
+                                }
+                            } else if (advacednavigation) {
+                                if (destinationLocationObject.getName().equals(locationMap.getActiveLocation().getName())) {
+                                    navigateUser();
+                                } else {
+                                    Door userLocationDoor = destinationLocationObject.getNeighboursList().get(locationMap.getActiveLocation());
+                                    Door destinationDoor = locationMap.getActiveLocation().getNeighboursList().get(destinationLocationObject);
+                                    // ((door.x + startpointLocation.x) / locationWidth) * bitmapHeight
+                                    // ((door.y + startpointLocation.Y) / locationHeight) * bitmapWidth
+                                    double userLocationDoorX = (userLocationDoor.getStartPointX() + locationMap.getActiveLocation().getStartPointX()) / locationWidth * temp.getWidth();
+                                    double destinationDoorX = ((destinationDoor.getStartPointX() + destinationLocationObject.getStartPointX()) / locationWidth) * temp.getWidth();
+                                    double userLocationDoorY = ((userLocationDoor.getStartPointY() + locationMap.getActiveLocation().getStartPointY()) / locationHeight) * temp.getHeight();
+                                    double destinationDoorY = ((destinationDoor.getStartPointY() + destinationLocationObject.getStartPointY()) / locationHeight) * temp.getHeight();
 
-            if (navigationActive) {
-                Paint p = new Paint();
-                p.setColor(Color.GREEN);
-                p.setStrokeWidth(20f);
-                float destinationMiddleX =  destinationPointer.x + destinationIcon.getMinimumWidth()/2;
-                float destinationMiddleY =  destinationPointer.y + destinationIcon.getMinimumHeight()/2;
-                if (simplenavigation) {
-                    if(!destinationLocationObject.getName().equals(locationMap.getActiveLocation().getName())){
-                        navigateUser();
-                    } else {
-                        Log.d("navigate", "drawSimpleNavigationLine from - x: " + destinationPointer.x + " y: " + destinationPointer.y + " to x: " + userPositionX + " y: " + userPositionY);
-                        c.drawLine(destinationMiddleX, destinationMiddleY, userPositionX, userPositionY, p);
-                    }
-                } else if (advacednavigation) {
-                    if(destinationLocationObject.getName().equals(locationMap.getActiveLocation().getName())){
-                        navigateUser();
-                    } else {
-                        Door userLocationDoor = destinationLocationObject.getNeighboursList().get(locationMap.getActiveLocation());
-                        //TODO flur scheißt rein weils zur active location wird aber keine neighbourslist hat
-                        Door destinationDoor = locationMap.getActiveLocation().getNeighboursList().get(destinationLocationObject);
-                        // ((door.x + startpointLocation.x) / locationWidth) * bitmapHeight
-                        // ((door.y + startpointLocation.Y) / locationHeight) * bitmapWidth
-                        double userLocationDoorX = (userLocationDoor.getStartPointX() + locationMap.getActiveLocation().getStartPointX()) / locationWidth * temp.getWidth();
-                        double destinationDoorX = ((destinationDoor.getStartPointX() + destinationLocationObject.getStartPointX()) / locationWidth) * temp.getWidth();
-                        double userLocationDoorY = ((userLocationDoor.getStartPointY() + locationMap.getActiveLocation().getStartPointY()) / locationHeight) * temp.getHeight();
-                        double destinationDoorY = ((destinationDoor.getStartPointY() + destinationLocationObject.getStartPointY()) / locationHeight) * temp.getHeight();
-
-                        c.drawLine(userPositionX, userPositionY, (float) userLocationDoorX, (float) userLocationDoorY, p);
-                        c.drawLine((float) userLocationDoorX, (float) userLocationDoorY, (float) destinationDoorX, (float) destinationDoorY, p);
-                        c.drawLine((float) destinationDoorX, (float) destinationDoorY, destinationMiddleX, destinationMiddleY, p);
+                                    c.drawLine(userPositionX, userPositionY, (float) userLocationDoorX, (float) userLocationDoorY, p);
+                                    c.drawLine((float) userLocationDoorX, (float) userLocationDoorY, (float) destinationDoorX, (float) destinationDoorY, p);
+                                    c.drawLine((float) destinationDoorX, (float) destinationDoorY, destinationMiddleX, destinationMiddleY, p);
+                                }
+                            }
+                        }
                     }
                 }
+                c.drawBitmap(drawableToBitmap(destinationIcon), destinationPointer.x, destinationPointer.y, destinationPaint);
+
+                if (userPositionX != 0 && userPositionY != 0) {
+                    c.drawCircle(userPositionX, userPositionY, mPointerRadius, positionPaint);
+                }
+
+                //draw navigationLine
+
+                setImageBitmap(temp);
+                actualBitmap = temp;
+                bitmapRedrawNeeded = false;
+
+                Log.d("PositionView", "drawing done");
+
+            } else if (destinationPointer == null) {
+                //destinationpointer deleted
+                //TODO Userposition dazu zeichnen
+                //TODO bei delete jumpt die anzeige auf eine andere position wenn gezoomed ist
+                if (userPositionX != 0 && userPositionY != 0) {
+                    c.drawCircle(userPositionX, userPositionY, mPointerRadius, positionPaint);
+                }
+                actualBitmap = temp;
+                setImageBitmap(actualBitmap);
+                bitmapRedrawNeeded = false;
             }
-            c.drawBitmap(drawableToBitmap(destinationIcon),destinationPointer.x, destinationPointer.y,destinationPaint);
-
-            if(userPositionX != 0 && userPositionY != 0){
-                c.drawCircle(userPositionX, userPositionY, mPointerRadius,positionPaint);
-            }
-
-            //draw navigationLine
-
-            setImageBitmap(temp);
-            actualBitmap = temp;
-            bitmapRedrawNeeded = false;
-
-            Log.d("PositionView", "drawing done");
-
-        }else if(destinationPointer == null){
-            //destinationpointer deleted
-            //TODO Userposition dazu zeichnen
-            //TODO bei delete jumpt die anzeige auf eine andere position wenn gezoomed ist
-            if(userPositionX != 0 && userPositionY != 0){
-                c.drawCircle(userPositionX, userPositionY, mPointerRadius,positionPaint);
-            }
-            actualBitmap = temp;
-            setImageBitmap(actualBitmap);
-            bitmapRedrawNeeded = false;
         }
         super.onDraw(canvas);
     }
@@ -312,7 +333,7 @@ public class PositionView  extends TouchImageView{
 
     }
 
-    public void navigateUser(){
+    public boolean navigateUser(){
         navigationActive = true;
         if (destinationLocationObject.getName().equals(locationMap.getActiveLocation().getName())){
             advacednavigation = false;
@@ -323,6 +344,7 @@ public class PositionView  extends TouchImageView{
         }
         Canvas c = new Canvas(actualBitmap);
         draw(c);
+        return arrivedAtDestination;
     }
 
     public void onDeletePostionClicked() {
