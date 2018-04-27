@@ -165,10 +165,10 @@ public class PositionView  extends TouchImageView{
                     float destinationMiddleY = destinationPointer.y + destinationIcon.getMinimumHeight() / 2;
                     if (!(userPositionY == 0 && userPositionX == 0)) {
                         // destX <= userX && userX <= destX
-                        double destinationRangeXPlus = destinationMiddleX + 100;
-                        double destinationRangeYPlus = destinationMiddleY + 100;
-                        double destinationRangeXMinus = destinationMiddleX - 100;
-                        double destinationRangeYMinus = destinationMiddleY - 100;
+                        double destinationRangeXPlus = destinationMiddleX + 200;
+                        double destinationRangeYPlus = destinationMiddleY + 200;
+                        double destinationRangeXMinus = destinationMiddleX - 200;
+                        double destinationRangeYMinus = destinationMiddleY - 200;
                         Log.d("navigate", "destinationRange: x: " + destinationRangeXPlus + " to " + destinationRangeXMinus + " y: " + destinationRangeYPlus + " to " + destinationRangeYMinus);
                         if ((destinationRangeXMinus <= userPositionX && destinationRangeXPlus >= userPositionX) && (destinationRangeYMinus <= userPositionY && destinationRangeYPlus >= userPositionY)) {
                             // TODO Notification that user arrived at destination
@@ -191,13 +191,21 @@ public class PositionView  extends TouchImageView{
                                     // ((door.x + startpointLocation.x) / locationWidth) * bitmapHeight
                                     // ((door.y + startpointLocation.Y) / locationHeight) * bitmapWidth
                                     double userLocationDoorX = (userLocationDoor.getStartPointX() + locationMap.getActiveLocation().getStartPointX()) / locationWidth * temp.getWidth();
+
                                     double destinationDoorX = ((destinationDoor.getStartPointX() + destinationLocationObject.getStartPointX()) / locationWidth) * temp.getWidth();
                                     double userLocationDoorY = ((userLocationDoor.getStartPointY() + locationMap.getActiveLocation().getStartPointY()) / locationHeight) * temp.getHeight();
                                     double destinationDoorY = ((destinationDoor.getStartPointY() + destinationLocationObject.getStartPointY()) / locationHeight) * temp.getHeight();
 
-                                    c.drawLine(userPositionX, userPositionY, (float) userLocationDoorX, (float) userLocationDoorY, p);
-                                    c.drawLine((float) userLocationDoorX, (float) userLocationDoorY, (float) destinationDoorX, (float) destinationDoorY, p);
-                                    c.drawLine((float) destinationDoorX, (float) destinationDoorY, destinationMiddleX, destinationMiddleY, p);
+
+                                    if(!locationMap.getActiveLocation().getName().equals("flur")){
+                                        c.drawLine(userPositionX, userPositionY, (float) userLocationDoorX, (float) userLocationDoorY, p);
+                                        c.drawLine((float) userLocationDoorX, (float) userLocationDoorY, (float) destinationDoorX, (float) destinationDoorY, p);
+                                        c.drawLine((float) destinationDoorX, (float) destinationDoorY, destinationMiddleX, destinationMiddleY, p);
+                                    } else {
+                                        c.drawLine(userPositionX, userPositionY, (float) userLocationDoorX, (float) userLocationDoorY, p);
+                                        c.drawLine((float) userLocationDoorX, (float) userLocationDoorY, destinationMiddleX, destinationMiddleY, p);
+                                    }
+
                                 }
                             }
                         }

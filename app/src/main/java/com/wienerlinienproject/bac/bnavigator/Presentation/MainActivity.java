@@ -446,7 +446,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             kitchen.setStartPointX(2.0);
             kitchen.setStartPointY(0.75);
             Door bottomDoor = new Door("bottom", 2.5, 0, 3.0, 0);
-            Door bottomDoorKitchen = new Door("bottom", 2.5, 0, 3.0, 0);
+            Door bottomDoorKitchen = new Door("bottom", 0.25, 0, 0.75, 0);
 
             LocationObject room = new LocationObject("room-84l");
             room.setHeight(6.0);
@@ -460,14 +460,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             flur.setStartPointX(2.5);
             flur.setStartPointY(5.75);
             Door bottomDoorFlur = new Door("bottom", 0.25, 0, 0.75, 0);
-            Door topDoorFlur = new Door("top", 0.25, 2, 0.75, 2);
+            Door topDoorFlur = new Door("top", 0.5, 2, 0.75, 2);
 
             locationMap.addLocation("kitchen-2s1", kitchen);
             locationMap.addLocation("room-84l", room);
             locationMap.addLocation("flur",flur);
 
             Door topDoor = new Door("top", 1.0, 5.0, 1.5, 5.0);
-            Door topDoorRoom = new Door("top", 1.0, 5.0, 1.5, 5.0);
+            Door topDoorRoom = new Door("top", 0.5, 2, 0.75, 2);
             neighboursListRoom.put(locationMap.getLocationByName("kitchen-2s1"), topDoor);
             room.setNeighboursList(neighboursListRoom);
             neighboursListKitchen.put(locationMap.getLocationByName("room-84l"), bottomDoor);
