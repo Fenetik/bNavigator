@@ -357,8 +357,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            arrivedAtDestination = positionView.getArrivedAtDestination();
             Log.d("MainActivity_Callback", "received callback");
-
+            Log.d("MainActivity_Callback", "arrivedAtDestination: " + arrivedAtDestination + " counter "+counter);
             if(!arrivedAtDestination) {
                 if (intent.getAction().equals(BROADCAST_BeaconService)) {
                     if (!intent.getStringExtra(BROADCAST_PARAM).startsWith("Beacon")) {
@@ -425,7 +426,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     Log.d("MainActivity_Location", "indoorview done");
                 }
             } else if (counter == 0){
+                Log.d("mainactivity", "showarrivedatdestinatin");
                 showArrivedAtDestination();
+
                 counter++;
                 //stopService(intent);
             }
@@ -446,7 +449,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             kitchen.setStartPointX(2.0);
             kitchen.setStartPointY(0.75);
             Door bottomDoor = new Door("bottom", 2.5, 0, 3.0, 0);
-            Door bottomDoorKitchen = new Door("bottom", 0.25, 0, 0.75, 0);
+            Door bottomDoorKitchen = new Door("bottom", 0.5, 0, 0.75, 0);
 
             LocationObject room = new LocationObject("room-84l");
             room.setHeight(6.0);
@@ -459,7 +462,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             flur.setWidth(1.0);
             flur.setStartPointX(2.5);
             flur.setStartPointY(5.75);
-            Door bottomDoorFlur = new Door("bottom", 0.25, 0, 0.75, 0);
+            Door bottomDoorFlur = new Door("bottom", 0.5, 0, 0.75, 0);
             Door topDoorFlur = new Door("top", 0.5, 2, 0.75, 2);
 
             locationMap.addLocation("kitchen-2s1", kitchen);

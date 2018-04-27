@@ -83,6 +83,8 @@ public class PositionView  extends TouchImageView{
     private boolean simplenavigation;
     private boolean advacednavigation;
 
+    private int counter;
+
     //Laut dp im drawn_map.xml (Breite und Höhe in Meter)
     //TODO sollte in Locationmap ausgelagert werden
     private double locationWidth = 6.0;
@@ -98,6 +100,10 @@ public class PositionView  extends TouchImageView{
         super(context, attr);
         destinationSetCallback = (DestinationSetCallback) context;
         init();
+    }
+
+    public boolean getArrivedAtDestination(){
+        return arrivedAtDestination;
     }
 
     private void init(){
@@ -116,6 +122,8 @@ public class PositionView  extends TouchImageView{
 
         mPointerX = 300.0f;
         mPointerY = 800.0f;
+
+        counter = 0;
 
         navigationActive = false;
         simplenavigation = false;
@@ -152,7 +160,7 @@ public class PositionView  extends TouchImageView{
         Bitmap temp = drawableToBitmap(initialDrawnMap);
         Canvas c = new Canvas(temp);
 
-        if(!arrivedAtDestination) {
+        if(counter < 2) {
             if (destinationPointer != null) {
 
                 //returnt breite/höhe in pixel (tatsächlich angezeigt)
@@ -165,15 +173,16 @@ public class PositionView  extends TouchImageView{
                     float destinationMiddleY = destinationPointer.y + destinationIcon.getMinimumHeight() / 2;
                     if (!(userPositionY == 0 && userPositionX == 0)) {
                         // destX <= userX && userX <= destX
-                        double destinationRangeXPlus = destinationMiddleX + 200;
-                        double destinationRangeYPlus = destinationMiddleY + 200;
-                        double destinationRangeXMinus = destinationMiddleX - 200;
-                        double destinationRangeYMinus = destinationMiddleY - 200;
+                        double destinationRangeXPlus = destinationMiddleX + 150;
+                        double destinationRangeYPlus = destinationMiddleY + 150;
+                        double destinationRangeXMinus = destinationMiddleX - 150;
+                        double destinationRangeYMinus = destinationMiddleY - 150;
                         Log.d("navigate", "destinationRange: x: " + destinationRangeXPlus + " to " + destinationRangeXMinus + " y: " + destinationRangeYPlus + " to " + destinationRangeYMinus);
                         if ((destinationRangeXMinus <= userPositionX && destinationRangeXPlus >= userPositionX) && (destinationRangeYMinus <= userPositionY && destinationRangeYPlus >= userPositionY)) {
                             // TODO Notification that user arrived at destination
                             Log.d("navigate", "You have reached the destination");
                             arrivedAtDestination = true;
+                            counter++;
                         } else {
                             if (simplenavigation) {
                                 if (!destinationLocationObject.getName().equals(locationMap.getActiveLocation().getName())) {
@@ -197,7 +206,7 @@ public class PositionView  extends TouchImageView{
                                     double destinationDoorY = ((destinationDoor.getStartPointY() + destinationLocationObject.getStartPointY()) / locationHeight) * temp.getHeight();
 
 
-                                    if(!locationMap.getActiveLocation().getName().equals("flur")){
+                                    if (!locationMap.getActiveLocation().getName().equals("flur")) {
                                         c.drawLine(userPositionX, userPositionY, (float) userLocationDoorX, (float) userLocationDoorY, p);
                                         c.drawLine((float) userLocationDoorX, (float) userLocationDoorY, (float) destinationDoorX, (float) destinationDoorY, p);
                                         c.drawLine((float) destinationDoorX, (float) destinationDoorY, destinationMiddleX, destinationMiddleY, p);
