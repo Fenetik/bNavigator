@@ -1,10 +1,7 @@
 package com.wienerlinienproject.bac.bnavigator.Presentation;
 
 import android.annotation.SuppressLint;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -13,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.v7.app.AlertDialog;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -105,6 +101,9 @@ public class PositionView  extends TouchImageView{
     public boolean getArrivedAtDestination(){
         return arrivedAtDestination;
     }
+    public void setArrivedAtDestination(boolean arrived){
+        this.arrivedAtDestination= arrived;
+    }
 
     private void init(){
 
@@ -117,11 +116,11 @@ public class PositionView  extends TouchImageView{
         destinationLocationObject = null;
         locationMap = null;
 
-        userPositionX = 0;
-        userPositionY = 0;
-
-        mPointerX = 300.0f;
-        mPointerY = 800.0f;
+        //Testwerte, wenn kein Beacon in der Nähe ist
+        userPositionX = 200;
+        userPositionY = 200;
+        mPointerX = 200.0f;
+        mPointerY = 200.0f;
 
         counter = 0;
 
@@ -179,7 +178,8 @@ public class PositionView  extends TouchImageView{
                         // TODO Notification that user arrived at destination
                         Log.d("navigate", "You have reached the destination");
                         arrivedAtDestination = true;
-                        onDeletePostionClicked();
+                        onDeletePositionClicked();
+                        destinationSetCallback.onTargetReached();
                     } else {
                         if (simplenavigation) {
                             if (!destinationLocationObject.getName().equals(locationMap.getActiveLocation().getName())) {
@@ -218,7 +218,9 @@ public class PositionView  extends TouchImageView{
 
                 }
             }
-            c.drawBitmap(drawableToBitmap(destinationIcon), destinationPointer.x, destinationPointer.y, destinationPaint);
+            if(destinationPointer !=null){
+                c.drawBitmap(drawableToBitmap(destinationIcon), destinationPointer.x, destinationPointer.y, destinationPaint);
+            }
 
             if (userPositionX != 0 && userPositionY != 0) {
                 c.drawCircle(userPositionX, userPositionY, mPointerRadius, positionPaint);
@@ -363,7 +365,7 @@ public class PositionView  extends TouchImageView{
         return arrivedAtDestination;
     }
 
-    public void onDeletePostionClicked() {
+    public void onDeletePositionClicked() {
         if(destinationPointer != null){
             destinationPointer = null;
             bitmapRedrawNeeded = true;
@@ -388,7 +390,8 @@ public class PositionView  extends TouchImageView{
             return locationMap.getLocationByName("room-84l");
         }else if(redValue == 255 && blueValue == 254 && greenValue == 255){
             Log.d("within Location","Yes (Nats Flur), "+"red:"+redValue+" blue:"+blueValue+" green:"+greenValue);
-            return null;
+            //return null;
+            return locationMap.getLocationByName("flur");
         }else if (redValue == 255 && blueValue ==255 && greenValue == 254){
             Log.d("within Location","Yes (Nats Kitchen), "+"red:"+redValue+" blue:"+blueValue+" green:"+greenValue);
             Log.d("within Location",locationMap.getLocationByName("kitchen-2s1").getName());
@@ -415,10 +418,6 @@ public class PositionView  extends TouchImageView{
         Log.d("ScrollingToUser","X:"+mPointerX +" Y: "+mPointerY);
     }
 
-    public Point getDestinationPointer() {
-        return destinationPointer;
-    }
-
     public void resetListener (){
         setOnTouchListener(null);
     }
@@ -427,7 +426,28 @@ public class PositionView  extends TouchImageView{
         this.initialDrawnMap = backgroundMap;
     }
 
+
+    //called to get share information
+    public Point getDestinationPointer(){
+        return destinationPointer;
+    }
+
+    //called to get share information
+    public LocationObject getDestinationLocationObject(){
+        return locationMap.getLocationByName(destinationLocation);
+    }
+
+    //called if clicked on share mark
+    public void setDestination(Point p, String s){
+        destinationPointer = p;
+        destinationLocation = s;
+        destinationSetCallback.onDestinationSet();
+        bitmapRedrawNeeded = true;
+        invalidate();
+    }
+
     interface DestinationSetCallback{
         public void onDestinationSet();
+        public void onTargetReached();
     }
 }
