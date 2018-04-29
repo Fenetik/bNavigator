@@ -81,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private int counter;
 
     private Toolbar myToolbar;
+    private boolean myToolbarIsInflated = false;
+    private boolean myToolBarDestinationSet = false;
 
 
     //TODO in diesem Fall kann man nur eine Serviceconnection haben?
@@ -206,6 +208,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         filter.addAction(ServiceCallbackReceiver.BROADCAST_getLocation);
         registerReceiver(callbackReceiver, filter);
 
+        fillLocationMap();
+        positionView.setLocationMap(locationMap);
+
         if (getIntent().getDataString() != null) {
             UrlQuerySanitizer sanitizer = new UrlQuerySanitizer(getIntent().getDataString());
             Log.e("IntentShare", sanitizer.getValue("x"));
@@ -278,8 +283,16 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_main, menu);
+        myToolbarIsInflated = true;
         shareMark = myToolbar.getMenu().findItem(R.id.action_shareMark);
         deleteMark = myToolbar.getMenu().findItem(R.id.action_deleteMark);
+
+        if(myToolBarDestinationSet){
+            deleteMark.setVisible(true);
+            shareMark.setVisible(true);
+            fabNavigateMe.setVisibility(View.VISIBLE);
+        }
+
         return true;
     }
 
@@ -362,9 +375,16 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     @Override
     public void onDestinationSet() {
+        if(myToolbarIsInflated){
+            deleteMark.setVisible(true);
+            shareMark.setVisible(true);
+            fabNavigateMe.setVisibility(View.VISIBLE);
+
+        }else{
+            myToolBarDestinationSet = true;
+        }
         //myToolbar.getMenu().findItem(R.id.action_deleteMark).setVisible(true);
-        shareMark.setVisible(true);
-        fabNavigateMe.setVisibility(View.VISIBLE);
+       //shareMark.setVisible(true);
 
         positionView.resetListener();
     }
@@ -391,7 +411,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         public void onReceive(Context context, Intent intent) {
             arrivedAtDestination = positionView.getArrivedAtDestination();
             //Log.d("MainActivity_Callback", "received callback");
-            Log.d("MainActivity_Callback", "arrivedAtDestination: " + arrivedAtDestination + " counter " + counter);
+            //Log.d("MainActivity_Callback", "arrivedAtDestination: " + arrivedAtDestination + " counter " + counter);
             if (intent.getAction().equals(BROADCAST_BeaconService)) {
                 if (!intent.getStringExtra(BROADCAST_PARAM).startsWith("Beacon")) {
                     Log.d("MainActivity_Position", "got " + intent.getStringExtra(BROADCAST_PARAM));
@@ -408,9 +428,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     //positionView.invalidate();
                     //TODO Treshhold ab wann wirklich die Grafik neu gezeichnet werden soll!!!!
 
-                    //TODO abchecken ob gerundete werte für die lib auch passen
-                    //TODO posUpdate wird noch nicht gerundet!
-                    //TODO nicht nur ein Log über position updates sondern auch die beacons in range ausgeben
                     DecimalFormat df = new DecimalFormat("#.####");
                     //Log.d("locationMain","roundet:" + xPos + " to:" + df.format(xPos));
                     //Log.d("locationMain","roundet:" + yPos + " to:" + df.format(yPos));
@@ -451,8 +468,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     }
                 }
             } else if (intent.getAction().equals(BROADCAST_getLocation)) {
-                fillLocationMap(intent.getStringExtra(BROADCAST_PARAM));
-                positionView.setLocationMap(locationMap);
+                //fillLocationMap(intent.getStringExtra(BROADCAST_PARAM));
+                //locationMap.setActiveLocation(locationMap.getLocationByName(lastDefinedLocation));
+                locationMap.setActiveLocation(locationMap.getLocationByName(intent.getStringExtra(BROADCAST_PARAM)));
+
                 //                indoorView.setLocation(beaconService.getLocation());
                 Log.d("MainActivity_Location", "indoorview done");
             }
@@ -463,7 +482,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         locationMap.setActiveLocation(locationMap.getLocationByName(name));
     }
 
-    private void fillLocationMap(String lastDefinedLocation) {
+    private void fillLocationMap() {
         locationMap = new LocationMap();
         HashMap<LocationObject, Door> neighboursListKitchen = new HashMap<>();
         HashMap<LocationObject, Door> neighboursListRoom = new HashMap<>();
@@ -505,7 +524,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         neighboursListFlur.put(locationMap.getLocationByName("kitchen-2s1"), topDoorFlur);
         neighboursListFlur.put(locationMap.getLocationByName("room-84l"), bottomDoorFlur);
         flur.setNeighboursList(neighboursListFlur);
-        locationMap.setActiveLocation(locationMap.getLocationByName(lastDefinedLocation));
+        //locationMap.setActiveLocation(locationMap.getLocationByName(lastDefinedLocation));
     }
 }
 

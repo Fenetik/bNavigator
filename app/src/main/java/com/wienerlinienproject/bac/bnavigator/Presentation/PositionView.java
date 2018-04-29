@@ -119,8 +119,9 @@ public class PositionView  extends TouchImageView{
         //Testwerte, wenn kein Beacon in der Nähe ist
         userPositionX = 200;
         userPositionY = 200;
-        mPointerX = 200.0f;
-        mPointerY = 200.0f;
+        mPointerX = 0.1f;
+        mPointerY = 0.1f;
+
 
         counter = 0;
 
@@ -252,6 +253,8 @@ public class PositionView  extends TouchImageView{
 
     public void setLocationMap(LocationMap locationMap){
         this.locationMap = locationMap;
+        //TODO TESTWERT ENTFERNEN
+        setActiveLocation("kitchen-2s1");
     }
 
     private void drawUserPosition(Drawable drawable) {
@@ -441,9 +444,14 @@ public class PositionView  extends TouchImageView{
     public void setDestination(Point p, String s){
         destinationPointer = p;
         destinationLocation = s;
+        destinationLocationObject = locationMap.getLocationByName(s);
         destinationSetCallback.onDestinationSet();
         bitmapRedrawNeeded = true;
         invalidate();
+    }
+
+    public void setActiveLocation(String s){
+        locationMap.setActiveLocation(locationMap.getLocationByName(s));
     }
 
     interface DestinationSetCallback{
