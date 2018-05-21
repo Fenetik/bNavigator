@@ -29,6 +29,7 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:design:25.3.1'
     compile 'com.estimote:indoorsdk:2.1.0'
+    compile 'org.altbeacon:android-beacon-library:2.12.3'
     implementation 'com.estimote:proximity-sdk:0.2.0'
     compile 'com.qozix:tileview:2.2.8'
     testCompile 'junit:junit:4.12'
