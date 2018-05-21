@@ -15,26 +15,6 @@ import android.util.Log;
 import android.view.View;
 
 
-//TODO hier LocationObjekte laden oder in der Main Activity bzw die locationMap initialisieren?
-// => in der Main activity und dem view übergeben
-//TODO wer ruft LocationObject auf bzw erstellt diese und kommuniziert bzw fragt diese Objekte ab?
-//PositionView
-//TODO aktuelle/"aktive" Location wo speichern?
-//
-//TODO Neighbors selber speichern => Referenzen in jedem Pnbjekt zu den Neighbours
-//TODO Boundaries Speichern (sozusagen vom Referenzpunkt aus die Meter speichern (von height width) und so zirka boundaries speichern)
-//=> aktive location ist die von der die werte gültig in den jewieligen boudnaries liegen
-
-//TODO wie bekommt man Paths einer vectorgrafik aus android raus (Wände) , sodass man sicherstellen kann dass treffpunkt nicht außerhalb der
-//Map genommen wird
-
-
-//TODO Actionbar title ist noch statisch!
-
-
-//TODO Actionbar nicht floating über view sondern die view unterhalb der actionbar sodass man die ganze view sieht
-//TODO statt sircle für eigene position, das icon für my position einzeichnen
-
 public class PositionView  extends TouchImageView{
 
     private Paint positionPaint;
@@ -65,15 +45,10 @@ public class PositionView  extends TouchImageView{
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        // Account for padding
 
         float xpad = (float)(getPaddingLeft() + getPaddingRight());
         float ypad = (float)(getPaddingTop() + getPaddingBottom());
 
-
-        //TODO: schauen ob wir das auch brauchen (vielleicht für View darunter also das wir "auf der Map" gehen .. wenn möglich - auf dem Bild)
-        // Account for the label
-        // if (positionPaint) xpad += mTextWidth;
 
         float ww = (float)w - xpad;
         float hh = (float)h - ypad;
@@ -89,7 +64,6 @@ public class PositionView  extends TouchImageView{
         double locationWidth = 6.0;
         double locationHeight = 14.0;
 
-        //TODO für jede location bezugspunkt speichern (links obere ecke?)
         int xLocation = 0;
         int yLocation = 0;
 

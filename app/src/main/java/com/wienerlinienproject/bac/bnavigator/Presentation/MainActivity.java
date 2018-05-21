@@ -11,7 +11,6 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
@@ -35,7 +34,6 @@ import com.estimote.indoorsdk_module.cloud.LocationPosition;
 import com.estimote.indoorsdk_module.view.IndoorLocationView;
 import com.wienerlinienproject.bac.bnavigator.R;
 import com.wienerlinienproject.bac.bnavigator.Service.BeaconService;
-//import com.wienerlinienproject.bac.bnavigator.Service.CloudService;
 
 
 public class MainActivity extends AppCompatActivity implements ServiceConnection {
@@ -43,12 +41,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
     private BeaconService beaconService;
-    //private CloudService cloudService;
     private ServiceCallbackReceiver callbackReceiver = new ServiceCallbackReceiver();
     boolean beaconServiceIsBound = false;
     private TextView beaconLog;
     private PositionView positionView;
-   // private TouchImageView imageView;
     private IndoorLocationView indoorView;
     private boolean isFABOpen =false;
 
@@ -57,13 +53,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private FloatingActionButton fab2;
 
 
-    //TODO in diesem Fall kann man nur eine Serviceconnection haben?
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //hier sollen nur sachen rein die die UI benötigt
-
-        // Framelyout wäre gut für karte im hintergrund zeichen
 
         super.onCreate(savedInstanceState);
 
@@ -87,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         }
 
         indoorView = (IndoorLocationView) findViewById(R.id.indoor_view);
-        //positionView = (PositionView) findViewById(R.id.position);
         positionView = (PositionView) findViewById(R.id.map_view);
 
         beaconLog = (TextView) findViewById(R.id.beaconLog);
@@ -122,11 +112,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         Intent intentBeaconService = new Intent(this, BeaconService.class);
         bindService(intentBeaconService, this, Context.BIND_AUTO_CREATE);
-
-
-        //TODO
-        //Intent intentCloudService = new Intent (this, CloudService.class);
-        //bindService(intentCloudService, this, Context.BIND_AUTO_CREATE);
 
         //filtern worauf der receiver hören soll (Anroid vrwendet genrel broadcast)
         IntentFilter filter = new IntentFilter();
@@ -218,20 +203,15 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 double xPos = Double.valueOf(positionList.get(0));
                 double yPos = Double.valueOf(positionList.get(1));
                 String locationName = String.valueOf(positionList.get(2));
-                //positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
-                //positionView.invalidate();
 
-                //TODO Treshhold ab wann wirklich die Grafik neu gezeichnet werden soll!!!!
                 positionView.updateUserPosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth(),
                         ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map),locationName);
 
                 indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
                 beaconLog.append("x: " + positionView.getmPointerX() + " y: " + positionView.getmPointerY() + "\n");
-                //beaconLog.append("x: " + positionView.getmPointerX() + " y: " + imageView.getmPointerY() + "\n");
 
 
             }else if(intent.getAction().equals(BROADCAST_getLocation)) {
-//                indoorView.setLocation(beaconService.getLocation());
                 Log.d("MainActivity_Location", "indoorview done" );
             }
         }
