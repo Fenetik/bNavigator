@@ -73,6 +73,9 @@ public class PositionView  extends TouchImageView{
     private float userPositionX;
     private float userPositionY;
 
+    private float relativeUserPosX;
+    private float relativeUserPosY;
+
     private DestinationSetCallback destinationSetCallback;
 
     private boolean navigationActive;
@@ -134,8 +137,6 @@ public class PositionView  extends TouchImageView{
         Log.d("PositionView", "init done");
     }
 
-    //TODO vorhandene bitmap nehmen! nicht immer die initiale drawn Map verwenden! weil desitnation icon überschrieben wird
-    //TODO locations überschreiben!
     public void updateUserPosition(double xPos, double yPos, double viewHeight, double viewWidth,Drawable drawable){
 
         indoorViewHeight = viewHeight;
@@ -144,9 +145,11 @@ public class PositionView  extends TouchImageView{
         xLocation = locationMap.getActiveLocation().getStartPointX();
         yLocation = locationMap.getActiveLocation().getStartPointY();
 
-        mPointerX = (float) ((xPos+xLocation)/locationWidth);
+        relativeUserPosX = (float) (xPos+xLocation);
+        relativeUserPosY = (float)(yPos+yLocation);
 
-        mPointerY = (float) ((yPos+yLocation)/locationHeight);
+        mPointerX = (float) ((relativeUserPosX)/locationWidth);
+        mPointerY = (float) ((relativeUserPosY)/locationHeight);
 
 
 
@@ -452,6 +455,14 @@ public class PositionView  extends TouchImageView{
 
     public void setActiveLocation(String s){
         locationMap.setActiveLocation(locationMap.getLocationByName(s));
+    }
+
+    public float getRelativeUserPosX() {
+        return relativeUserPosX;
+    }
+
+    public float getRelativeUserPosY() {
+        return relativeUserPosY;
     }
 
     interface DestinationSetCallback{

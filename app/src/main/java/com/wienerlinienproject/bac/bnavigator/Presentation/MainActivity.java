@@ -438,13 +438,13 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     //indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
                     Spannable wordtoSpan;
                     if (locationName.equals("kitchen-2s1")) {
-                        wordtoSpan = new SpannableString("\nKitchen: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()));
+                        wordtoSpan = new SpannableString("\nKitchen: x: " + df.format(positionView.getRelativeUserPosX()) + " y: " + df.format(positionView.getRelativeUserPosY()));
                         wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#FFF000")), 0, 8, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                     } else if (locationName.equals("room-84l")) {
-                        wordtoSpan = new SpannableString("\nRoom: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()));
+                        wordtoSpan = new SpannableString("\nRoom: x: " + df.format(positionView.getRelativeUserPosX()) + " y: " + df.format(positionView.getRelativeUserPosY()));
                         wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#000FFF")), 0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                     } else {
-                        wordtoSpan = new SpannableString("\nFlur: x: " + df.format(positionView.getmPointerX()) + " y: " + df.format(positionView.getmPointerY()));
+                        wordtoSpan = new SpannableString("\nFlur: x: " + df.format(positionView.getRelativeUserPosX()) + " y: " + df.format(positionView.getRelativeUserPosY()));
                         wordtoSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#FF0000")), 0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                     }
                     locationLog.append(wordtoSpan);
