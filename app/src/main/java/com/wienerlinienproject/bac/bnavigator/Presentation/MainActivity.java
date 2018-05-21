@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private TextView locationLog;
     private TextView beaconLog;
     private PositionView positionView;
-    private IndoorLocationView indoorView;
+  //  private IndoorLocationView indoorView;
     private boolean isFABOpen = false;
 
     MenuItem deleteMark;
@@ -116,6 +116,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         arrivedAtDestination = false;
         //positionView = (PositionView) findViewById(R.id.position);
         positionView = (PositionView) findViewById(R.id.map_view);
+
+        //indoorView = (IndoorLocationView) findViewById(R.id.indoor_view);
 
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         myToolbar.setTitle(Html.fromHtml("<font color='#ffffff'>Aspern</font>"));
@@ -414,7 +416,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
                     DecimalFormat df = new DecimalFormat("#.####");
 
-                    positionView.updateUserPosition(xPos, yPos, indoorView.getHeight(), indoorView.getWidth(),
+                    positionView.updateUserPosition(xPos, yPos, positionView.getHeight(), positionView.getWidth(),
                             ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map));
 
                     Spannable wordtoSpan;
@@ -438,7 +440,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     String locationNearestBeacon = beaconInfo[0].substring(7, beaconInfo[0].length());
                     if (locationNearestBeacon.equals("Flur")) {
                         locationMap.setActiveLocation(locationMap.getLocationByName("flur"));
-                        positionView.updateUserPosition(0.5, 1.0, indoorView.getHeight(), indoorView.getWidth(),
+                        positionView.updateUserPosition(0.5, 1.0, positionView.getHeight(), positionView.getWidth(),
                                 ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map));
                         beaconLog.append("\nFlur:" + beaconInfo[1].substring(0, 4) + " " + beaconInfo[2].substring(0, 5) + "m");
                     } else if (locationNearestBeacon.equals("Kitchen")) {
