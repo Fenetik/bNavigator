@@ -43,21 +43,22 @@
                 android:id="@+id/fabFloor1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/WLRed"
-                android:layout_marginRight="@dimen/fab_margin"
-                android:layout_marginBottom="80dp"
-                android:layout_gravity="bottom|end|right"
-                android:src="@drawable/numeric_1"/>
+                app:backgroundTint="@color/WLRed"
+                android:layout_marginLeft="@dimen/fab_margin"
+                android:layout_marginBottom="16dp"
+                android:layout_gravity="bottom|end|left"
+                android:src="@drawable/numeric_1_white"/>
 
             <android.support.design.widget.FloatingActionButton
             android:id="@+id/fabFloor2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/WLRed"
-            android:layout_marginRight="@dimen/fab_margin"
-            android:layout_marginBottom="80dp"
-            android:layout_gravity="bottom|end|right"
-            android:src="@drawable/numeric_2"/>
+            app:backgroundTint="@color/WLRed"
+            android:layout_marginLeft="@dimen/fab_margin"
+            android:layout_marginBottom="16dp"
+            android:layout_gravity="bottom|end|left"
+            android:src="@drawable/numeric_2_white"
+                android:visibility="invisible"/>
 
             <android.support.design.widget.FloatingActionButton
             android:id="@+id/fabLocation"
@@ -65,8 +66,20 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end|right"
             android:layout_margin="@dimen/fab_margin"
-            android:backgroundTint="@color/WLRed"
+            app:backgroundTint="@color/WLRed"
             android:src="@drawable/my_location_white_48dp"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fabNavigateMe"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end|right"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="80dp"
+            app:backgroundTint="@color/WLRed"
+            android:src="@drawable/navigate_me"
+            android:visibility="invisible"/>
+
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fabMenu"
@@ -74,22 +87,50 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_marginRight="@dimen/fab_margin"
-            android:layout_marginBottom="80dp"
-            android:layout_gravity="bottom|end|right"
+            android:layout_marginLeft="@dimen/fab_margin"
+            android:layout_marginBottom="16dp"
+            android:layout_gravity="bottom|end|left"
             app:backgroundTint="@color/WLRed"
             android:src="@drawable/layers_white_48dp" />
     </FrameLayout>
 
-    <TextView android:text="Finding Beacons/Locations"
+    <TextView android:text="Waiting for Pos Updates"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/locationLog"
+        android:lines="7"
+        android:scrollbars = "vertical"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="0dp"
+        android:layout_marginBottom="135dp"
+        android:layout_marginLeft="10dp"
+        android:gravity="bottom|left"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:visibility="invisible"/>
+
+    <TextView android:text="Finding Beacons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/beaconLog"
-        android:lines="5"
+        android:lines="7"
+        android:layout_marginBottom="135dp"
+        android:layout_marginRight="10dp"
         android:scrollbars = "vertical"
-        android:gravity="bottom"
         tools:layout_editor_absoluteY="0dp"
         tools:layout_editor_absoluteX="0dp"
-        android:layout_alignParentBottom="true"/>
+        android:gravity="bottom|right"
+        android:layout_alignRight="@+id/locationLog"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:visibility="invisible"/>
+
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/BtnDebug"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="DebugMode"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="50dp"/>
 
 </RelativeLayout>
