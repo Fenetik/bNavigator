@@ -129,61 +129,7 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
         altBeaconManager.bind(this);
     }
 
-    /*private void defineLocations(){
-        Log.d("defineLocations","called");
-        LocationObject lastDefinedLocation = null;
-        for (LocationObject location : allLocations) {
-            HashMap<LocationObject, Door> neighboursList;
-            Door bottomDoor = null;
-            switch (location.getName()) {
-                case "kitchen-2s1":
-                    Log.d("defineLocations",location.getName());
-                    location.setHeight(5.0);
-                    location.setWidth(3.5);
-                    location.setStartPointX(2.0);
-                    location.setStartPointY(0.75);
-                    bottomDoor = new Door("bottom", 2.5, 0, 3.0, 0);
-                    neighboursList = new HashMap<>();
-                    neighboursList.put(locationMap.getLocationByName("room-84l"), bottomDoor);
-                    location.setNeighboursList(neighboursList);
-                    lastDefinedLocation = location;
-                    break;
-                case "room-84l":
-                    Log.d("defineLocations",location.getName());
-                    location.setHeight(6.0);
-                    location.setWidth(5.0);
-                    location.setStartPointX(0.5);
-                    location.setStartPointY(7.8);
-                    Door topDoor = new Door("top", 1.0, 5.0, 1.5, 5.0);
-                    neighboursList = new HashMap<>();
-                    neighboursList.put(locationMap.getLocationByName("kitchen-2s1"), topDoor);
-                    location.setNeighboursList(neighboursList);
-                    lastDefinedLocation = location;
-                    Log.d("testing something", "Room: "+location.getName());
-                    break;
-            }
 
-
-        }
-        //so that a current location is set from the beginning on
-        setCurrentLocation(lastDefinedLocation);
-        Log.d("defineLocation", "defineLocations done");
-        int i = 1;
-        Map tempmap = locationMap.getLocations();
-        Set tempset = tempmap.keySet();
-        for(Object loc: tempset){
-            Log.d("defineLocation","Locationmap Key "+i +": "+loc);
-            Log.d("defineLocation","Locationmap Entry "+i +": "+locationMap.getLocationByName((String)loc).getName());
-            i++;
-        }
-
-        Intent broadcast = new Intent(MainActivity.ServiceCallbackReceiver.BROADCAST_getLocation);
-        broadcast.putExtra(MainActivity.ServiceCallbackReceiver.BROADCAST_PARAM, "");
-        sendBroadcast(broadcast);
-
-        //Ranging darf erst nach define location fertig ist beginnen
-        altBeaconManager.bind(this);
-    }*/
 
     public void setCurrentLocation(Location newCurrent) {
         Log.d("altbeaconRanging",  "called new currentlocation "+newCurrent.getIdentifier());
@@ -204,7 +150,6 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
         indoorManager.setOnPositionUpdateListener(new OnPositionUpdateListener() {
             @Override
             public void onPositionUpdate(LocationPosition position) {
-                //TODO schauen ob es immer der selbe indoorManager ist der nur schneller updates schickt => ja ist immer das selbe objekt
 
                 if(locationToRange.getIdentifier().equals(activeLocation.getIdentifier())){
                     Log.d("locationManager", "Mgr:"+ indoorManager.toString().substring(30) +" PosUpdate:" + position.getX() + ", " + position.getY()+" Location:"+locationToRange.getIdentifier() +
@@ -275,7 +220,6 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
     }
 
 
-    //TODO eventuell die beacons in reagionen einteilen und die regionen dann gleich dem raum nennen
     @Override
     public void didRangeBeaconsInRegion(Collection<Beacon> collection, Region region) {
         Log.d("altbeaconRanging","didRangeBeaconsInReagion " + collection.size());
@@ -345,7 +289,6 @@ public class BeaconService extends Service implements BeaconConsumer,RangeNotifi
                 countRoom =0;
             }*/
         }
-//        Log.d("altbeaconRanging","Current Loc:"+locationMap.getActiveLocation().getName()+ " CountKitchen: " + countKitchen+ " CountRoom:"+ countRoom);
     }
 
     public class BeaconBinder extends Binder {

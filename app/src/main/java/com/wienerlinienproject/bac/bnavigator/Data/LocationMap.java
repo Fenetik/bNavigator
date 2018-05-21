@@ -5,7 +5,6 @@ import android.location.Location;
 import java.util.HashMap;
 import java.util.Map;
 
-//TODO wo wirklich intitialisieren? ws beaconservice => mittels broadcast an mainactivity schicken?
 //Stores all Location Objects
 public class LocationMap {
 

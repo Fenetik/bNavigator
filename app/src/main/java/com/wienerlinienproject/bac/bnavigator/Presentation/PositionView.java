@@ -21,32 +21,6 @@ import com.wienerlinienproject.bac.bnavigator.Data.LocationMap;
 import com.wienerlinienproject.bac.bnavigator.Data.LocationObject;
 
 
-//TODO hier LocationObjekte laden oder in der Main Activity bzw die locationMap initialisieren?
-// => in der Main activity und dem view übergeben
-//TODO wer ruft LocationObject auf bzw erstellt diese und kommuniziert bzw fragt diese Objekte ab?
-//PositionView
-//TODO aktuelle/"aktive" Location wo speichern?
-//
-//TODO Neighbors selber speichern => Referenzen in jedem Pnbjekt zu den Neighbours
-//TODO Boundaries Speichern (sozusagen vom Referenzpunkt aus die Meter speichern (von height width) und so zirka boundaries speichern)
-//=> aktive location ist die von der die werte gültig in den jewieligen boudnaries liegen
-
-
-//TODO Actionbar title ist noch statisch!
-
-//TODO statt circle für eigene position, das icon für my position einzeichnen
-
-
-//todo pro location eine zone
-//TODO bei add destination die destination location zurück geben bzw ausrechnen
-
-
-//TODO how to deep link?!
-//TODO userposition speichern
-//TODO destination position speichern (in meter relativ zum refernzpunkt der location)
-
-//TODO eine art absolute to relative koordinaten umrechnungs methode in locationmap?
-
 public class PositionView  extends TouchImageView{
 
     private Paint positionPaint;
@@ -60,7 +34,6 @@ public class PositionView  extends TouchImageView{
 
     private boolean arrivedAtDestination;
 
-    //TODO destinationRelativePointer
     private Point destinationPointer;
     private Drawable destinationIcon;
     private String destinationLocation;
@@ -69,7 +42,6 @@ public class PositionView  extends TouchImageView{
     private LocationMap locationMap;
     private LocationObject destinationLocationObject;
 
-    //TODO die userpositions müssen auf die ganze map umgerechnet werden, hier sind sie ja relativ je location
     private float userPositionX;
     private float userPositionY;
 
@@ -85,10 +57,8 @@ public class PositionView  extends TouchImageView{
     private int counter;
 
     //Laut dp im drawn_map.xml (Breite und Höhe in Meter)
-    //TODO sollte in Locationmap ausgelagert werden
     private double locationWidth = 6.0;
     private double locationHeight = 14.0;
-    //TODO für jede location bezugspunkt speichern (links obere ecke)
     double xLocation = 0.5;
     double yLocation = 7.8;
     private boolean bitmapRedrawNeeded = false;
@@ -179,7 +149,6 @@ public class PositionView  extends TouchImageView{
                     double destinationRangeYMinus = destinationMiddleY - 150;
                     Log.d("navigate", "destinationRange: x: " + destinationRangeXPlus + " to " + destinationRangeXMinus + " y: " + destinationRangeYPlus + " to " + destinationRangeYMinus);
                     if ((destinationRangeXMinus <= userPositionX && destinationRangeXPlus >= userPositionX) && (destinationRangeYMinus <= userPositionY && destinationRangeYPlus >= userPositionY)) {
-                        // TODO Notification that user arrived at destination
                         Log.d("navigate", "You have reached the destination");
                         arrivedAtDestination = true;
                         onDeletePositionClicked();
@@ -241,8 +210,6 @@ public class PositionView  extends TouchImageView{
 
         }else if (destinationPointer == null) {
             //destinationpointer deleted
-            //TODO Userposition dazu zeichnen
-            //TODO bei delete jumpt die anzeige auf eine andere position wenn gezoomed ist
             if (userPositionX != 0 && userPositionY != 0) {
                 c.drawCircle(userPositionX, userPositionY, mPointerRadius, positionPaint);
             }
@@ -256,7 +223,6 @@ public class PositionView  extends TouchImageView{
 
     public void setLocationMap(LocationMap locationMap){
         this.locationMap = locationMap;
-        //TODO TESTWERT ENTFERNEN
         setActiveLocation("kitchen-2s1");
     }
 
@@ -274,7 +240,6 @@ public class PositionView  extends TouchImageView{
         userPositionX = (mPointerX)*maxW;
         userPositionY = (mPointerY)*maxH;
 
-        //TODO hier invalidate not so good i guess, aber userposition wird sonst nicht gezeichnet wenn drawcircle nicht in ondraw
         invalidate();
         //c.drawCircle((mPointerX/getWidth())*maxW, (mPointerY/getHeight())*maxH, mPointerRadius,positionPaint);
         Log.d("Bitmap", "Draw:" + (mPointerX)*maxW + "px, " + (mPointerY)*maxH+"px");
@@ -339,7 +304,6 @@ public class PositionView  extends TouchImageView{
                 destinationLocationObject = isWithinLocation(pixelColor);
 
                 if(destinationLocationObject !=null){
-                    //TODO besser wäre auf koordinaten in der location konvertieren
 
                     //Bitmat is scaled to the View, so the Event position has to be scaled to to get the actual position on the Bitmap
                     destinationPointer = new Point (scaledX-(destinationIcon.getIntrinsicWidth()/2),scaledY-(destinationIcon.getIntrinsicHeight()/2));

@@ -84,11 +84,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private boolean myToolbarIsInflated = false;
     private boolean myToolBarDestinationSet = false;
 
-
-    //TODO in diesem Fall kann man nur eine Serviceconnection haben?
-
-    //TODO: nochmal checken ob die Bluetooth-Standortfreigabe nicht zu spät erteilt wird - evtl. muss alles gefreezed werden, bis Bestätigung kommt
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //hier sollen nur sachen rein die die UI benötigt
@@ -119,7 +114,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         counter = 0;
 
         arrivedAtDestination = false;
-        indoorView = (IndoorLocationView) findViewById(R.id.indoor_view);
         //positionView = (PositionView) findViewById(R.id.position);
         positionView = (PositionView) findViewById(R.id.map_view);
 
@@ -130,8 +124,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         //deleteMark = myToolbar.getMenu().findItem(R.id.action_deleteMark);
         //shareMark = myToolbar.getMenu().findItem(R.id.action_shareMark);
 
-
-        //TODO Destination Icon laden
         positionView.setDestinationIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_place_black_48dp));
         positionView.setBackgroundMap(ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map));
 
@@ -214,7 +206,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         if (getIntent().getDataString() != null) {
             UrlQuerySanitizer sanitizer = new UrlQuerySanitizer(getIntent().getDataString());
             Log.e("IntentShare", sanitizer.getValue("x"));
-            //TODO menuitems sind noch null aber die wollen wir ja schon anpasen da destination icon gesetzt wurde
             Point p = new Point(Integer.parseInt(sanitizer.getValue("x")),Integer.parseInt(sanitizer.getValue("y")));
             positionView.setDestination(p,sanitizer.getValue("loc"));
         }
@@ -324,7 +315,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         switch (item.getItemId()) {
             case R.id.action_setMark:
-                //TODO boolean machen, true returnen wenn position gesetzt wurde, erst dann visible setzen
                 positionView.onSetPositionClicked();
                 return true;
 
@@ -344,7 +334,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 }
                 final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Share your destination");
-                //TODO Example Link durch destination ersetzen
                 builder.setPositiveButton(android.R.string.copy, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -410,32 +399,24 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         @Override
         public void onReceive(Context context, Intent intent) {
             arrivedAtDestination = positionView.getArrivedAtDestination();
-            //Log.d("MainActivity_Callback", "received callback");
-            //Log.d("MainActivity_Callback", "arrivedAtDestination: " + arrivedAtDestination + " counter " + counter);
+
             if (intent.getAction().equals(BROADCAST_BeaconService)) {
                 if (!intent.getStringExtra(BROADCAST_PARAM).startsWith("Beacon")) {
                     Log.d("MainActivity_Position", "got " + intent.getStringExtra(BROADCAST_PARAM));
                     String positionStr = intent.getStringExtra(BROADCAST_PARAM);
                     List<String> positionList = Arrays.asList(positionStr.split(","));
-                    //double xPosLoc = Double.valueOf(positionList.get(0));
-                    //double yPosLoc = Double.valueOf(positionList.get(1));
+
                     double xPos = Double.valueOf(positionList.get(0));
                     double yPos = Double.valueOf(positionList.get(1));
                     String locationName = String.valueOf(positionList.get(2));
 
                     updateActiveLocation(locationName);
-                    //positionView.updatePosition(xPos, yPos,indoorView.getHeight(),indoorView.getWidth());
-                    //positionView.invalidate();
-                    //TODO Treshhold ab wann wirklich die Grafik neu gezeichnet werden soll!!!!
 
                     DecimalFormat df = new DecimalFormat("#.####");
-                    //Log.d("locationMain","roundet:" + xPos + " to:" + df.format(xPos));
-                    //Log.d("locationMain","roundet:" + yPos + " to:" + df.format(yPos));
 
                     positionView.updateUserPosition(xPos, yPos, indoorView.getHeight(), indoorView.getWidth(),
                             ContextCompat.getDrawable(MainActivity.this, R.drawable.drawn_map));
 
-                    //indoorView.updatePosition(new LocationPosition(xPos, yPos, 0.0));
                     Spannable wordtoSpan;
                     if (locationName.equals("kitchen-2s1")) {
                         wordtoSpan = new SpannableString("\nKitchen: x: " + df.format(positionView.getRelativeUserPosX()) + " y: " + df.format(positionView.getRelativeUserPosY()));
@@ -454,7 +435,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     String positionStr = intent.getStringExtra(BROADCAST_PARAM);
                     String[] beaconInfo = positionStr.split(",");
                     DecimalFormat df = new DecimalFormat("#.##");
-                    //"Beacon" muss abgeschnitten werden
                     String locationNearestBeacon = beaconInfo[0].substring(7, beaconInfo[0].length());
                     if (locationNearestBeacon.equals("Flur")) {
                         locationMap.setActiveLocation(locationMap.getLocationByName("flur"));
@@ -472,7 +452,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 //locationMap.setActiveLocation(locationMap.getLocationByName(lastDefinedLocation));
                 locationMap.setActiveLocation(locationMap.getLocationByName(intent.getStringExtra(BROADCAST_PARAM)));
 
-                //                indoorView.setLocation(beaconService.getLocation());
                 Log.d("MainActivity_Location", "indoorview done");
             }
         }
